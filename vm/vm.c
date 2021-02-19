@@ -4,6 +4,11 @@
 #include "vm/vm.h"
 #include "vm/inspect.h"
 
+//! ADD : initializer를 위해
+#include "vm/anon.h"
+#include "vm/file.h"
+//! END
+
 /* Initializes the virtual memory subsystem by invoking each subsystem's
  * intialize codes. */
 void vm_init(void)
@@ -59,8 +64,28 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         /* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
+        //! ADD: uninit_new
+        //  = palloc_get_page(PAL_USER | PAL_ZERO);
+        // if (upage == NULL)
+        //     goto err;
+
+        typedef bool (*initializerFunc)(struct page *, enum vm_type, void *);
+        initializerFunc initializer = NULL;
+
+        switch(type){
+            case VM_ANON:
+                initializer = anon_initializer;
+                break;
+            case VM_FILE:
+                initializer = file_backed_initializer;
+                break;
+        }
+        
+        // bool succ = uninit_initialize(upage, NULL);
+        uninit_new(struct page *page, upage, init, type, aux, initializer);
 
         /* TODO: Insert the page into the spt. */
+        spt_insert_page(spt, upage);
     }
 err:
     return false;
@@ -72,7 +97,18 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
 {
     struct page *page = NULL;
     /* TODO: Fill this function. */
+    //! ADD : find_vme
+    struct hash_elem *e;
 
+    page = (struct page *)pg_round_down(va);
+    e = hash_find(&spt->pages, &page->hash_elem);
+    if(e != NULL){
+        page = hash_entry(e, struct page, hash_elem);
+    }
+    else {
+        page = NULL;
+    }
+    //! END : find_vme;;;;;;;
     return page;
 }
 
@@ -82,7 +118,10 @@ bool spt_insert_page(struct supplemental_page_table *spt UNUSED,
 {
     int succ = false;
     /* TODO: Fill this function. */
-
+    //! ADD: vm_insert
+    if (!hash_insert(spt->pages, page->hash_elem))
+        succ = true;
+    //! END: vm_insert
     return succ;
 }
 
@@ -122,6 +161,13 @@ vm_get_frame(void)
 {
     struct frame *frame = NULL;
     /* TODO: Fill this function. */
+    //! ADD: vm_get_frame
+    frame = palloc_get_page(PAL_USER);
+    if(frame == NULL) PANIC("todo\n");
+
+    frame->kva = NULL;
+    frame->page = NULL;
+    //! END: vm_get_frame
 
     ASSERT(frame != NULL);
     ASSERT(frame->page == NULL);
@@ -180,6 +226,7 @@ vm_do_claim_page(struct page *page)
     page->frame = frame;
 
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
+    pml4_set_page();
 
     return swap_in(page, frame->kva);
 }
@@ -187,6 +234,9 @@ vm_do_claim_page(struct page *page)
 /* Initialize new supplemental page table */
 void supplemental_page_table_init(struct supplemental_page_table *spt UNUSED)
 {
+    //! ADD: spt init
+    vm_init();
+    //! END: spt init
 }
 
 /* Copy supplemental page table from src to dst */
@@ -200,6 +250,8 @@ void supplemental_page_table_kill(struct supplemental_page_table *spt UNUSED)
 {
     /* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
+    //! ADD: hash_destroy = vm_destroy
+    hash_destroy (&spt->pages, destructor);
 }
 
 //! ADD: Functions for hash table
@@ -236,16 +288,9 @@ bool delete_page(struct hash *pages, struct page *p)
         return false;
 }
 
-/* Returns the page containing the given virtual address, or a null pointer if no such page exists. */
-struct page * //! find_vme
-page_lookup(const void *address)
+//! ADD: destructor
+void destructor(struct hash_elem *e)
 {
-    struct page p;
-    struct hash_elem *e;
-
-    p.addr = address;
-    e = hash_find(&thread_current()->spt.pages, &p.hash_elem);
-    return e != NULL ? hash_entry(e, struct page, hash_elem) : NULL;
+    const struct page *p = hash_entry(e, struct page, hash_elem);
+    vm_dealloc_page(p);
 }
-
-//! END: Functions for hash table
