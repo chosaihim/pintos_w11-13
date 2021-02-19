@@ -252,10 +252,6 @@ process_exec (void *f_name) {
         argc++;
     }
 
-    //! ADD: vm_init()
-    vm_init();
-    //! END: vm_init
-
     /* We cannot use the intr_frame in the thread structure.
 	 * This is because when current thread rescheduled,
 	 * it stores the execution information to the member. */
@@ -355,6 +351,10 @@ process_exit (void) {
 		/* load 시에도 file_open 해주었다. -- file_close 필요하다. */
 
     palloc_free_page(curr->fd_table);
+
+    //! ADD: vm_destroy
+    supplemental_page_table_kill(&curr->spt.pages);
+
     free_children();
 	/* 순서 주의 */
 	process_cleanup (); /* pml4 를 끝낸다. */
@@ -919,6 +919,20 @@ lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: Load the segment from the file */
 	/* TODO: This called when the first page fault occurs on address VA. */
 	/* TODO: VA is available when calling this function. */
+    //! ADD: lazy_load_segment
+    /* Load this page. */
+    if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes) {
+        palloc_free_page (kpage);
+        return false;
+    }
+    memset (kpage + page_read_bytes, 0, page_zero_bytes);
+
+    /* Add the page to the process's address space. */
+    if (!install_page (upage, kpage, writable)) {
+        printf("fail\n");
+        palloc_free_page (kpage);
+        return false;
+    }
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
