@@ -137,7 +137,7 @@ struct thread {
 #endif
 #ifdef VM
 	/* Table for whole virtual memory owned by thread. */
-	struct supplemental_page_table spt;
+	struct supplemental_page_table spt; //! vm is in spt
 #endif
 
 	/* Owned by thread.c. */

@@ -229,6 +229,8 @@ error:
 
 /* Switch the current execution context to the f_name.
  * Returns -1 on fail. */
+
+//! ADD: same as start_process in ppt
 int
 process_exec (void *f_name) {
 	char *file_name = f_name;
@@ -249,6 +251,11 @@ process_exec (void *f_name) {
 		argv[argc] = token;
         argc++;
     }
+
+    //! ADD: vm_init()
+    vm_init();
+    //! END: vm_init
+
     /* We cannot use the intr_frame in the thread structure.
 	 * This is because when current thread rescheduled,
 	 * it stores the execution information to the member. */
