@@ -1025,7 +1025,7 @@ setup_stack (struct intr_frame *if_) {
 		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
         // success = vm_claim_page(stack_bottom);
 		if (success){
-            printf("here??\n");
+            // printf("here??\n");
 			if_->rsp = USER_STACK;
         }
         else

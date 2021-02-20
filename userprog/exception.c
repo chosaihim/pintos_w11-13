@@ -147,7 +147,7 @@ page_fault (struct intr_frame *f) {
     // printf("page fault !! %p\n", fault_addr);
 	if (vm_try_handle_fault (f, fault_addr, user, write, not_present)){
 
-        printf("page fault\n");
+        // printf("page fault\n");
 		return;
     }
 #endif

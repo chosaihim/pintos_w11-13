@@ -106,16 +106,16 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
     struct page page;
     /* TODO: Fill this function. */
     //! ADD : find_vme
-    // struct hash_elem *e;
+    struct hash_elem *e;
 
     // printf("BEFORE hash find \n");
     // printf("va :: %d\n", (uint64_t)PGMASK);
     page.va = pg_round_down(va);
-    printf("page.va :: %p\n", page.va);
+    // printf("page.va :: %p\n", page.va);
     // printf("AFTER pg_round_down \n");
     // printf("spt->pages :: %p\n", &spt->pages);
     // printf("page->hash_elem :: %p\n", &page.hash_elem);
-    struct hash_elem *e = hash_find(&spt->pages, &page.hash_elem);
+    e = hash_find(&spt->pages, &page.hash_elem);
     // printf("AFTER hash find \n");
     // free(page);
     return e != NULL ? hash_entry (e, struct page, hash_elem) : NULL;
@@ -203,12 +203,14 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
                          bool user UNUSED, bool write UNUSED, bool not_present UNUSED)
 {
     struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
-    struct page *page;
-    printf("addr :: %p\n", addr);
+    struct page *page = NULL;
+    // printf("addr :: %p\n", addr);
     /* TODO: Validate the fault */
     /* TODO: Your code goes here */
     //! ADD: modify vm_try_handle_fault
+
     page = spt_find_page(spt, addr);
+    printf("page 주소 :: %p\n", page);
     if (page == NULL) return false;
     // printf("page addr :: %p\n", addr);
     // printf("ee\n");
@@ -254,13 +256,15 @@ vm_do_claim_page(struct page *page)
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
     // struct thread *curr = thread_current();
     //! ADD: insert pml4_set_page
-    printf("page->frame :: %p\n", page->frame);
-    printf("frame->page :: %p\n", frame->page);
-    printf("page->va :: %p\n", page->va);
-    printf("frame->kva :: %p\n", frame->kva);
+    // printf("frame :: %p\n", frame);
+    // printf("page :: %p\n", page);
+    // printf("page->frame :: %p\n", page->frame);
+    // printf("frame->page :: %p\n", frame->page);
+    // printf("page->va :: %p\n", page->va);
+    // printf("frame->kva :: %p\n", frame->kva);
     if(install_page(page->va, frame->kva, page->writable))
     {
-        printf("여기서 터지나요??\n");
+        // printf("여기서 터지나요??\n");
         return swap_in(page, frame->kva);
     }
     return false;
