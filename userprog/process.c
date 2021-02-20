@@ -914,10 +914,10 @@ install_page (void *upage, void *kpage, bool writable) {
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
 //! ADD: install_page
-static bool install_page (void *upage, void *kpage, bool writable);
+bool install_page (void *upage, void *kpage, bool writable);
 //! ADD: VM에서 가지고 가려고, static제거!!!!!
 //! static bool //이게 original code
-static bool
+bool
 install_page (void *upage, void *kpage, bool writable) {
 	struct thread *t = thread_current ();
 
@@ -934,6 +934,7 @@ lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: VA is available when calling this function. */
     //! ADD: lazy_load_segment
     //! 이게 맞나?; aux[0]을 *file로 casting하고 싶어서, 참조 가능한 이중 void 포인터로((void **)aux) 먼저 캐스팅
+    // printf("lazy load init !!\n");
     struct file *file = (struct file *)(((void **)aux)[0]);
     uint8_t *upage = (uint8_t *)(((void **)aux)[1]);
     size_t page_read_bytes = *(size_t *)(((void **)aux)[2]);
@@ -958,6 +959,7 @@ lazy_load_segment (struct page *page, void *aux) {
         palloc_free_page (kpage);
         return false;
     }
+    return true;
     //! END: insert of lazy_load_segment
 }
 
@@ -1016,17 +1018,15 @@ setup_stack (struct intr_frame *if_) {
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
     //! ADD: setup_stack
-    uint8_t *kpage;
+    // uint8_t *kpage;
 
-	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-	if (kpage != NULL) {
-		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
+	// kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+	if (stack_bottom != NULL) {
+		// success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
+        success = vm_claim_page(stack_bottom);
 		if (success){
 			if_->rsp = USER_STACK;
-            // success = vm_alloc_page(VM_MARKER_0, stack_bottom, true);
         }
-		else
-			palloc_free_page (kpage);
 	}
 
     //! END: setup_stack

@@ -59,7 +59,7 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
 
     struct supplemental_page_table *spt = &thread_current()->spt;
 
-    // printf("before if PPPPPPPPPPPPPPPPP\n");
+    // printf("upage addr :: %p\n", upage);
     /* Check wheter the upage is already occupied or not. */
     if (spt_find_page(spt, upage) == NULL)
     {
@@ -109,9 +109,9 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
     // struct hash_elem *e;
 
     // printf("BEFORE hash find \n");
-    // printf("va :: %d\n", (uint64_t)va);
     // printf("va :: %d\n", (uint64_t)PGMASK);
     page.va = pg_round_down(va);
+    // printf("page.va :: %p\n", page.va);
     // printf("AFTER pg_round_down \n");
     // printf("spt->pages :: %p\n", &spt->pages);
     // printf("page->hash_elem :: %p\n", &page.hash_elem);
@@ -130,7 +130,9 @@ bool spt_insert_page(struct supplemental_page_table *spt UNUSED,
     /* TODO: Fill this function. */
     //! ADD: vm_insert
     if (!hash_insert(&spt->pages, &page->hash_elem))
+    {
         succ = true;
+    }
     //! END: vm_insert
     return succ;
 }
@@ -169,14 +171,14 @@ vm_evict_frame(void)
 static struct frame *
 vm_get_frame(void)
 {
-    struct frame *frame;
+    struct frame *frame = palloc_get_page(PAL_USER);
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
     frame->kva = palloc_get_page(PAL_USER);
     if(frame->kva == NULL) PANIC("todo\n");
-    printf("vm_get_page!! \n");
+    // printf("vm_get_page!! \n");
 
-    // frame->page = NULL;
+    frame->page = NULL;
     //! END: vm_get_frame
 
     ASSERT(frame != NULL);
@@ -202,15 +204,18 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
 {
     struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
     struct page *page;
-    printf("dd\n");
+    // printf("dd\n");
     /* TODO: Validate the fault */
     /* TODO: Your code goes here */
     //! ADD: modify vm_try_handle_fault
     page = spt_find_page(spt, addr);
     // printf("page addr :: %p\n", addr);
-    printf("ee\n");
+    // printf("ee\n");
+    if (not_present)
+        return vm_do_claim_page(page);
+    else
+        return false;
 
-    return vm_do_claim_page(page);
 }
 
 /* Free the page.
@@ -229,6 +234,7 @@ bool vm_claim_page(void *va UNUSED)
     //! ADD: vm_claim_page
     page = spt_find_page(&thread_current()->spt, va);
     //! END: vm_claim_page
+    // printf("여기서 터지나요??\n");
 
     return vm_do_claim_page(page);
 }
@@ -237,10 +243,10 @@ bool vm_claim_page(void *va UNUSED)
 static bool
 vm_do_claim_page(struct page *page)
 {
-    printf("page addr in vm_do :: %p\n", page);
+    // printf("page addr in vm_do :: %p\n", page);
     struct frame *frame = vm_get_frame();
-    printf("frame addr :: %p\n", frame);
-
+    // printf("frame addr :: %p\n", frame);
+    printf("여기서 터지나요??\n");
     /* Set links */
     frame->page = page;
     page->frame = frame;
@@ -248,10 +254,13 @@ vm_do_claim_page(struct page *page)
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
     // struct thread *curr = thread_current();
     //! ADD: insert pml4_set_page
-    pml4_set_page(page->va, frame->kva, page->writable);
-    printf("after set page !!!\n");
-
+    if(!install_page(page->va, frame->kva, page->writable))
+    {
+        return false;
+    }
+    
     return swap_in(page, frame->kva);
+
 }
 
 /* Initialize new supplemental page table */
@@ -259,7 +268,9 @@ void supplemental_page_table_init(struct supplemental_page_table *spt UNUSED)
 {
     //! ADD: spt init
     // printf("supple &thread_current()->spt.pages :: %p\n", &thread_current()->spt.pages);
+    // printf("supple page init !! \n");
     hash_init(&spt->pages, page_hash, page_less, NULL);
+    // printf("supple page init 222!! \n");
     //! END: spt init
 }
 
@@ -284,7 +295,7 @@ unsigned
 page_hash(const struct hash_elem *p_, void *aux UNUSED)
 {
     const struct page *p = hash_entry(p_, struct page, hash_elem);
-    return hash_bytes(&p->va, sizeof(p->va));
+    return hash_bytes(&p->va, sizeof p->va);
 }
 
 /* Returns true if page a precedes page b. */
