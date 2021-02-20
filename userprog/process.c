@@ -914,7 +914,7 @@ install_page (void *upage, void *kpage, bool writable) {
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
 //! ADD: install_page
-bool install_page (void *upage, void *kpage, bool writable);
+// bool install_page (void *upage, void *kpage, bool writable);
 //! ADD: VM에서 가지고 가려고, static제거!!!!!
 //! static bool //이게 original code
 bool
@@ -1018,16 +1018,23 @@ setup_stack (struct intr_frame *if_) {
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
     //! ADD: setup_stack
-    // uint8_t *kpage;
+    uint8_t *kpage;
 
-	// kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-	if (stack_bottom != NULL) {
-		// success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
-        success = vm_claim_page(stack_bottom);
+	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+	if (kpage != NULL) {
+		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
+        // success = vm_claim_page(stack_bottom);
 		if (success){
+            printf("here??\n");
 			if_->rsp = USER_STACK;
         }
+        else
+            palloc_free_page(kpage);
 	}
+
+    /* vm_entry생성*/
+    /* vm_entry멤버들설정*/
+    /* insert_vme() 함수로해시테이블에추가*/
 
     //! END: setup_stack
 
