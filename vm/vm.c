@@ -68,7 +68,8 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
         //! ADD: uninit_new
-        struct page *page = (struct page*)malloc(sizeof(struct page));
+        struct page* page = (struct page*)malloc(sizeof(struct page));
+        // struct page *page;
         //  = palloc_get_page(PAL_USER | PAL_ZERO);
         // if (upage == NULL)
         //     goto err;
@@ -103,19 +104,20 @@ err:
 struct page *
 spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
 {
-    struct page page;
+    struct page* page;
     /* TODO: Fill this function. */
     //! ADD : find_vme
     struct hash_elem *e;
 
     // printf("BEFORE hash find \n");
     // printf("va :: %d\n", (uint64_t)PGMASK);
-    page.va = pg_round_down(va);
+    page->va = pg_round_down(va);
     // printf("page.va :: %p\n", page.va);
     // printf("AFTER pg_round_down \n");
     // printf("spt->pages :: %p\n", &spt->pages);
     // printf("page->hash_elem :: %p\n", &page.hash_elem);
-    e = hash_find(&spt->pages, &page.hash_elem);
+    e = hash_find(&spt->pages, &page->hash_elem);
+    // printf("e :: %p", e);
     // printf("AFTER hash find \n");
     // free(page);
     return e != NULL ? hash_entry (e, struct page, hash_elem) : NULL;
@@ -129,7 +131,8 @@ bool spt_insert_page(struct supplemental_page_table *spt UNUSED,
     int succ = false;
     /* TODO: Fill this function. */
     //! ADD: vm_insert
-    if (!hash_insert(&spt->pages, &page->hash_elem))
+    struct hash_elem *e = hash_insert(&spt->pages, &page->hash_elem);
+    if (e == NULL)
     {
         succ = true;
     }
@@ -171,11 +174,14 @@ vm_evict_frame(void)
 static struct frame *
 vm_get_frame(void)
 {
-    struct frame *frame = palloc_get_page(PAL_USER);
+    struct frame *frame = palloc_get_page(PAL_ZERO | PAL_USER);
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
-    frame->kva = palloc_get_page(PAL_USER);
-    if(frame->kva == NULL) PANIC("todo\n");
+    frame->kva = palloc_get_page(PAL_ZERO | PAL_USER);
+    if(frame == NULL | frame->kva == NULL)
+    {
+        PANIC("todo\n");
+    }
     // printf("vm_get_page!! \n");
 
     frame->page = NULL;
@@ -210,12 +216,14 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
     //! ADD: modify vm_try_handle_fault
 
     page = spt_find_page(spt, addr);
-    printf("page 주소 :: %p\n", page);
+    // printf("page 주소 :: %p\n", page);
     if (page == NULL) return false;
     // printf("page addr :: %p\n", addr);
-    // printf("ee\n");
-    if (not_present)
+    if (not_present){
+
+        // printf("ee\n");
         return vm_do_claim_page(page);
+    }
     else
         return false;
 
@@ -256,6 +264,7 @@ vm_do_claim_page(struct page *page)
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
     // struct thread *curr = thread_current();
     //! ADD: insert pml4_set_page
+    // TODO : mapping va to pa in the page table
     // printf("frame :: %p\n", frame);
     // printf("page :: %p\n", page);
     // printf("page->frame :: %p\n", page->frame);
@@ -269,7 +278,6 @@ vm_do_claim_page(struct page *page)
     }
     return false;
     
-
 }
 
 /* Initialize new supplemental page table */

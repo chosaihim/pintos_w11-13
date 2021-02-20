@@ -45,12 +45,12 @@ uninit_new (struct page *page, void *va, vm_initializer *init,
 /* Initalize the page on first fault */
 static bool
 uninit_initialize (struct page *page, void *kva) {
-    // printf("여기 들어감?\n");
 	struct uninit_page *uninit = &page->uninit;
 
 	/* Fetch first, page_initialize may overwrite the values */
 	vm_initializer *init = uninit->init;
 	void *aux = uninit->aux;
+    // printf("여기 들어감?\n");
 
 	/* TODO: You may need to fix this function. */
 	return uninit->page_initializer (page, uninit->type, kva) &&

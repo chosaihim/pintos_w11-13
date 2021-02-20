@@ -927,6 +927,15 @@ install_page (void *upage, void *kpage, bool writable) {
 			&& pml4_set_page (t->pml4, upage, kpage, writable));
 }
 
+//! ADD: aux 구조체
+struct box {
+    struct file *file;
+    uint8_t *upage;
+    size_t page_read_bytes;
+    size_t page_zero_bytes;
+    bool writable;
+};
+
 static bool
 lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: Load the segment from the file */
@@ -935,30 +944,44 @@ lazy_load_segment (struct page *page, void *aux) {
     //! ADD: lazy_load_segment
     //! 이게 맞나?; aux[0]을 *file로 casting하고 싶어서, 참조 가능한 이중 void 포인터로((void **)aux) 먼저 캐스팅
     // printf("lazy load init !!\n");
-    struct file *file = (struct file *)(((void **)aux)[0]);
-    uint8_t *upage = (uint8_t *)(((void **)aux)[1]);
-    size_t page_read_bytes = *(size_t *)(((void **)aux)[2]);
-    size_t page_zero_bytes = *(size_t *)(((void **)aux)[3]);
-    bool writable = *(bool *)(((void **)aux)[4]);
+    // struct file *file = (struct file *)(((void **)aux)[0]);
+    // uint8_t *upage = (uint8_t *)(((void **)aux)[1]);
+    // size_t page_read_bytes = *(size_t *)(((void **)aux)[2]);
+    // size_t page_zero_bytes = *(size_t *)(((void **)aux)[3]);
+    // bool writable = *(bool *)(((void **)aux)[4]);
+
+    struct file *file = ((struct box *)aux)->file;
+    uint8_t *upage = ((struct box *)aux)->upage;
+    size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
+    size_t page_zero_bytes = ((struct box *)aux)->page_zero_bytes;
+    bool writable = ((struct box *)aux)->writable;
+    // printf("read_byte :: %d\n", page_read_bytes);
+    // printf("zero_byte :: %d\n", page_zero_bytes);
+    // printf("file :: %p\n", file);
+    // printf("file ofs :: %d\n", file->pos);
 
     /* Get a page of memory. */
-    uint8_t *kpage = palloc_get_page (PAL_USER);
-    if (kpage == NULL)
-        return false;
+    // uint8_t *kpage = palloc_get_page (PAL_USER);
+    // if (kpage == NULL)
+    //     return false;
 
     /* Load this page. */
-    if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes) {
-        palloc_free_page (kpage);
+    if (file_read (file, page->frame->kva, page_read_bytes) != (int) page_read_bytes) {
+        palloc_free_page (page->frame->kva);
         return false;
     }
-    memset (kpage + page_read_bytes, 0, page_zero_bytes);
+    memset (page->frame->kva + page_read_bytes, 0, page_zero_bytes);
 
-    /* Add the page to the process's address space. */
-    if (!install_page (upage, kpage, writable)) {
-        printf("fail\n");
-        palloc_free_page (kpage);
-        return false;
-    }
+    // /* Add the page to the process's address space. */
+    // if (!install_page (upage, kpage, writable)) {
+    //     printf("fail\n");
+    //     palloc_free_page (kpage);
+    //     return false;
+    // }
+    // printf("here??\n");
+    // printf("upage-va :: %p\n", page->va);
+    hex_dump(page->va, page->va, PGSIZE, true);
+    free(aux);
     return true;
     //! END: insert of lazy_load_segment
 }
@@ -984,19 +1007,29 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
 
+    file_seek (file, ofs);
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_READ_BYTES bytes from FILE
 		 * and zero the final PAGE_ZERO_BYTES bytes. */
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+        // printf("read_byte :: %d\n", page_read_bytes);
+        // printf("zero_byte :: %d\n", page_zero_bytes);
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
         // void *aux = NULL;
         //! ADD: aux modified
-		void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
+		// void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
+        struct box *box = (struct box*)malloc(sizeof(struct box));
+        box->file = file;
+        box->upage = upage;
+        box->page_read_bytes = page_read_bytes;
+        box->page_zero_bytes = page_zero_bytes;
+        box->writable = writable;
+        // printf("upage :: %p\n", upage);
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
-					writable, lazy_load_segment, aux))
+					writable, lazy_load_segment, box))
 			return false;
 
 		/* Advance. */
@@ -1022,7 +1055,7 @@ setup_stack (struct intr_frame *if_) {
 
 	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
 	if (kpage != NULL) {
-		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
+		success = install_page (stack_bottom, kpage, true);
         // success = vm_claim_page(stack_bottom);
 		if (success){
             // printf("here??\n");
