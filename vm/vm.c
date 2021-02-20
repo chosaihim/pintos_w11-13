@@ -7,6 +7,7 @@
 //! ADD : initializer를 위해
 #include "vm/anon.h"
 #include "vm/file.h"
+#include "userprog/process.h"
 //! END
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
@@ -65,7 +66,7 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
         //! ADD: uninit_new
-        struct page *page = NULL;
+        struct page *page = (struct page*)malloc(sizeof(struct page));
         //  = palloc_get_page(PAL_USER | PAL_ZERO);
         // if (upage == NULL)
         //     goto err;
@@ -83,11 +84,10 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         }
         
         // bool succ = uninit_initialize(upage, NULL);
-        uninit_new(struct page *page, upage, init, type, aux, initializer);
+        uninit_new(page, upage, init, type, aux, initializer);
 
         /* TODO: Insert the page into the spt. */
-        spt_insert_page(spt, upage);
-        return true;
+        return spt_insert_page(spt, page);
         //! END: uninit_new
     }
 err:
@@ -116,7 +116,7 @@ bool spt_insert_page(struct supplemental_page_table *spt UNUSED,
     int succ = false;
     /* TODO: Fill this function. */
     //! ADD: vm_insert
-    if (!hash_insert(spt->pages, page->hash_elem))
+    if (!hash_insert(&spt->pages, &page->hash_elem))
         succ = true;
     //! END: vm_insert
     return succ;
@@ -226,7 +226,7 @@ vm_do_claim_page(struct page *page)
 
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
     // struct thread *curr = thread_current();
-    if(!pml4_set_page(thread_current()->pml4, page->va, frame->kva, page->writable))
+    if(!pml4_set_page(page->va, frame->kva, page->writable))
         return false;
 
     return swap_in(page, frame->kva);
@@ -261,7 +261,7 @@ unsigned
 page_hash(const struct hash_elem *p_, void *aux UNUSED)
 {
     const struct page *p = hash_entry(p_, struct page, hash_elem);
-    return hash_bytes(&p->addr, sizeof p->addr);
+    return hash_bytes(&p->va, sizeof p->va);
 }
 /* Returns true if page a precedes page b. */
 //! ADD: page_less = vm_less_func
@@ -276,14 +276,14 @@ bool page_less(const struct hash_elem *a_,
 
 bool insert_page(struct hash *pages, struct page *p)
 {
-    if (!hash_insert(pages, p->hash_elem))
+    if (!hash_insert(pages, &p->hash_elem))
         return true;
     else
         return false;
 }
 bool delete_page(struct hash *pages, struct page *p)
 {
-    if (!hash_delete(pages, p->hash_elem))
+    if (!hash_delete(pages, &p->hash_elem))
         return true;
     else
         return false;

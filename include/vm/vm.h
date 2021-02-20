@@ -29,6 +29,7 @@ enum vm_type
 #include "vm/uninit.h"
 #include "vm/anon.h"
 #include "vm/file.h"
+#include "lib/kernel/hash.h"
 #ifdef EFILESYS
 #include "filesys/page_cache.h"
 #endif
@@ -55,7 +56,7 @@ struct page
     void *vaddr;        /* vm_entry가관리하는가상페이지번호*/
     bool writable;      /* True일경우해당주소에write 가능 False일경우해당주소에write 불가능*/
     bool is_loaded;     /* 물리메모리의탑재여부를알려주는플래그*/
-    struct file *file;  /* 가상주소와맵핑된파일*/
+    struct file *ffile;  /* 가상주소와맵핑된파일*/
     
     /* Memory Mapped File 에서다룰예정*/
     struct list_elem mmap_elem;/* mmap리스트element */
@@ -145,6 +146,10 @@ page_hash (const struct hash_elem *p_, void *aux UNUSED);
 bool
 page_less (const struct hash_elem *a_,
            const struct hash_elem *b_, void *aux UNUSED);
+bool insert_page(struct hash *pages, struct page *p);
+bool delete_page(struct hash *pages, struct page *p);
+void destructor(struct hash_elem *e);
+
 //! END: Functions for Hash table
 
 #endif /* VM_VM_H */

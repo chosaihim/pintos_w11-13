@@ -913,6 +913,19 @@ install_page (void *upage, void *kpage, bool writable) {
 /* From here, codes will be used after project 3.
  * If you want to implement the function for only project 2, implement it on the
  * upper block. */
+//! ADD: install_page
+static bool install_page (void *upage, void *kpage, bool writable);
+//! ADD: VM에서 가지고 가려고, static제거!!!!!
+//! static bool //이게 original code
+static bool
+install_page (void *upage, void *kpage, bool writable) {
+	struct thread *t = thread_current ();
+
+	/* Verify that there's not already a page at that virtual
+	 * address, then map our page there. */
+	return (pml4_get_page (t->pml4, upage) == NULL
+			&& pml4_set_page (t->pml4, upage, kpage, writable));
+}
 
 static bool
 lazy_load_segment (struct page *page, void *aux) {
@@ -920,11 +933,12 @@ lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: This called when the first page fault occurs on address VA. */
 	/* TODO: VA is available when calling this function. */
     //! ADD: lazy_load_segment
-    struct file *file = aux[0];
-    uint8_t *upage = aux[1];
-    size_t page_read_bytes = *(size_t *)aux[2];
-    size_t page_zero_bytes = *(size_t *)aux[3];
-    bool writable = *(bool *)aux[4];
+    //! 이게 맞나?; aux[0]을 *file로 casting하고 싶어서, 참조 가능한 이중 void 포인터로((void **)aux) 먼저 캐스팅
+    struct file *file = (struct file *)(((void **)aux)[0]);
+    uint8_t *upage = (uint8_t *)(((void **)aux)[1]);
+    size_t page_read_bytes = *(size_t *)(((void **)aux)[2]);
+    size_t page_zero_bytes = *(size_t *)(((void **)aux)[3]);
+    bool writable = *(bool *)(((void **)aux)[4]);
 
     /* Get a page of memory. */
     uint8_t *kpage = palloc_get_page (PAL_USER);
@@ -944,6 +958,7 @@ lazy_load_segment (struct page *page, void *aux) {
         palloc_free_page (kpage);
         return false;
     }
+    //! END: insert of lazy_load_segment
 }
 
 /* Loads a segment starting at offset OFS in FILE at address
@@ -976,7 +991,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
         // void *aux = NULL;
-		void *aux[5] = [file, upage, &page_read_bytes, &page_zero_bytes, &writable];
+		void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, aux))
 			return false;
@@ -999,6 +1014,21 @@ setup_stack (struct intr_frame *if_) {
 	 * TODO: If success, set the rsp accordingly.
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
+    //! ADD: setup_stack
+    uint8_t *kpage;
+
+	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+	if (kpage != NULL) {
+		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
+		if (success){
+			if_->rsp = USER_STACK;
+            success = vm_alloc_page(VM_MARKER_0, stack_bottom, true);
+        }
+		else
+			palloc_free_page (kpage);
+	}
+
+    //! END: setup_stack
 
 	return success;
 }

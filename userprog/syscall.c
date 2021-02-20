@@ -22,7 +22,7 @@ void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
 /* 헤더에 넣으면 오류가 나요 */
-void check_address(void *addr);
+struct page* check_address(void *addr);
 // void get_frame_argument(void *rsp, int *arg);
 
 
@@ -61,106 +61,112 @@ syscall_handler (struct intr_frame *f UNUSED) {
 
     /* rsp 유효성 검증 */
     /* 우리는 상한선에서 출발해서 밑으로 쌓았다. */
+    //! ADD: check_address 주석
     check_address(f->rsp);
-
-    /*rsp 부터 인자들을 arg에 저장하기 */
-    // get_frame_argument(f,arg);
-    // get_argument()
 
     uint64_t number = f->R.rax;
     switch(number){
-
-    case SYS_HALT :
-
-        halt();
-        break;
-
-    case SYS_EXIT:
-
-        // int status = f->R.rdi;
-        exit(f->R.rdi);
-        break;
-    case SYS_FORK :
-        // process_create_initd(thread_name);
-        // char* thread_name = f->R.rdi;
-
-        memcpy(&thread_current()->fork_tf, f,sizeof(struct intr_frame));
-        f->R.rax = fork(f->R.rdi);
-        break;
-    case SYS_EXEC :
-        // exec(file);
-        // char * file = f->R.rdi;
-        // printf("I'm EXEC ! \n");
-        f->R.rax = exec(f->R.rdi);
-        break;
-    case SYS_WAIT:  
-        // wait(pid);
-        // pid_t pid = f->R.rdi;
-        f->R.rax = wait(f->R.rdi);
-        break;
-    case SYS_CREATE:
-        // create(file, initial_size);
-        // char* file = f->R.rdi;
-        // unsigned initial_size = f->R.rsi;
-        f->R.rax = create(f->R.rdi, f->R.rsi) ;
-        break;
-    case SYS_REMOVE:
-        // remove(file);
-        // char* file = f->R.rdi;
-        f->R.rax = remove(f->R.rdi) ;
-        break;
-    case SYS_OPEN :
-        // open(file);
-        // char* file = f->R.rdi;
-        f->R.rax = open(f->R.rdi);
-        break;
-    case SYS_FILESIZE:
-        // filesize(fd);
-        // int fd = f->R.rdi;
-        f->R.rax = filesize(f->R.rdi);
-        break;
-    case SYS_READ:
-        // read(fd, buffer, length);
-        // int fd = f->R.rdi;
-        // void * buffer = f->R.rsi;
-        // unsigned length = f->R.rdx;
-        f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
-        break;
-    case SYS_WRITE:
-        // write(fd, buffer, length);
-        // int fd = f->R.rdi;
-        // void *buffer = f->R.rsi;
-        // unsigned length = f->R.rdx;
-        // printf(">>>>> I'm WRITE ! \n");
-        f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
-        break;
-    case SYS_SEEK :
-        // seek(fd, position);
-        // int fd = f->R.rdi;
-        // unsigned position = f->R.rsi;
-        seek(f->R.rdi,f->R.rsi);
-        break;
-    case SYS_TELL:
-        // tell(fd);
-        // int fd = f->R.rdi;
-        tell(f->R.rdi);
-        break;
-    case SYS_CLOSE:
-        // close(fd);
-        // int fd = f->R.rdi;
-        close(f->R.rdi);
-        break;
+        case SYS_HALT :
+            halt();
+            break;
+        case SYS_EXIT:
+            exit(f->R.rdi);
+            break;
+        case SYS_FORK :
+            memcpy(&thread_current()->fork_tf, f,sizeof(struct intr_frame));
+            f->R.rax = fork(f->R.rdi);
+            break;
+        case SYS_EXEC :
+            //! ADD: insert check_valid_string
+            check_valid_string(f->R.rdi, f->rsp);
+            f->R.rax = exec(f->R.rdi);
+            break;
+        case SYS_WAIT:  
+            f->R.rax = wait(f->R.rdi);
+            break;
+        case SYS_CREATE:
+            f->R.rax = create(f->R.rdi, f->R.rsi) ;
+            break;
+        case SYS_REMOVE:
+            f->R.rax = remove(f->R.rdi) ;
+            break;
+        case SYS_OPEN :
+            //! ADD: insert check_valid_string
+            check_valid_string(f->R.rdi, f->rsp);
+            f->R.rax = open(f->R.rdi);
+            break;
+        case SYS_FILESIZE:
+            f->R.rax = filesize(f->R.rdi);
+            break;
+        case SYS_READ:
+            //! ADD: insert check_valid_buffer instead of check_address
+            check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 0);
+            f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
+            break;
+        case SYS_WRITE:
+            check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 1);
+            //! ADD:가 아니라 check_valid_string 만들지 않음(PPT랑 다름)
+            f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
+            break;
+        case SYS_SEEK :
+            seek(f->R.rdi,f->R.rsi);
+            break;
+        case SYS_TELL:
+            tell(f->R.rdi);
+            break;
+        case SYS_CLOSE:
+            close(f->R.rdi);
+            break;
     }
 	// thread_exit ();
 }
 
 /*** It could be dangerous ***/
-void check_address(void *addr){
+//! ADD: check_address
+struct page* check_address(void *addr){
     if (is_kernel_vaddr(addr))
     {
         exit(-1);
     }
+    return spt_find_page(&thread_current()->spt, addr);
 }
+//! END: check_address
+
+//! ADD: check_valid_buffer
+void check_valid_buffer(void* buffer, unsigned size, void* rsp, bool to_write)
+{
+    /* 인자로받은buffer부터buffer + size까지의크기가한페이지의크기를넘을수도있음*/
+    /*check_address를이용해서주소의유저영역여부를검사함과동시에vm_entry구조체를얻음*/
+    /* 해당주소에대한vm_entry존재여부와vm_entry의writable멤버가true인지검사*/
+    /* 위내용을buffer부터buffer + size까지의주소에포함되는vm_entry들에대해적용*/
+    for(int i = 0; i <= size; i++)
+    {
+        struct page* page = check_address((char *)buffer + i);
+        if(page != NULL)
+        {
+            if(to_write == true)
+            {
+                if(page->writable == false)
+                {
+                    exit(-1);
+                }
+
+            }
+        }
+    }
+}
+//! END: check_valid_buffer
+
+// //! ADD: check_valid_string
+void check_valid_string(const void *str, void *rsp)
+{
+	if(check_address(str) == NULL)
+    {
+        exit(-1);
+    }
+}
+
+// //! END: check_valid_string
 
 
 void halt(void){
@@ -245,9 +251,7 @@ int read(int fd, void *buffer, unsigned length){
         }
         else
         {
-
             ret = file_read(target,buffer,length);
-            // printf("read : %d\n", ret);
         }
     }
     lock_release(&filesys_lock);

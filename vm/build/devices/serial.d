@@ -6,6 +6,8 @@ devices/serial.o: ../../devices/serial.c ../../include/devices/serial.h \
  ../../include/lib/stddef.h ../../include/devices/timer.h \
  ../../include/lib/round.h ../../include/threads/io.h \
  ../../include/threads/thread.h ../../include/vm/vm.h \
- ../../include/threads/palloc.h ../../include/vm/uninit.h \
+ ../../include/threads/palloc.h ../../include/threads/vaddr.h \
+ ../../include/threads/loader.h ../../include/vm/uninit.h \
  ../../include/vm/anon.h ../../include/vm/file.h \
- ../../include/filesys/file.h ../../include/filesys/off_t.h
+ ../../include/filesys/file.h ../../include/filesys/off_t.h \
+ ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h
