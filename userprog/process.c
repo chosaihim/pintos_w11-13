@@ -920,6 +920,17 @@ lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: This called when the first page fault occurs on address VA. */
 	/* TODO: VA is available when calling this function. */
     //! ADD: lazy_load_segment
+    struct file *file = aux[0];
+    uint8_t *upage = aux[1];
+    size_t page_read_bytes = *(size_t *)aux[2];
+    size_t page_zero_bytes = *(size_t *)aux[3];
+    bool writable = *(bool *)aux[4];
+
+    /* Get a page of memory. */
+    uint8_t *kpage = palloc_get_page (PAL_USER);
+    if (kpage == NULL)
+        return false;
+
     /* Load this page. */
     if (file_read (file, kpage, page_read_bytes) != (int) page_read_bytes) {
         palloc_free_page (kpage);
@@ -964,7 +975,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
-		void *aux = NULL;
+        // void *aux = NULL;
+		void *aux[5] = [file, upage, &page_read_bytes, &page_zero_bytes, &writable];
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, aux))
 			return false;

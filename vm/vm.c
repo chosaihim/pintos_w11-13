@@ -65,6 +65,7 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
         //! ADD: uninit_new
+        struct page *page = NULL;
         //  = palloc_get_page(PAL_USER | PAL_ZERO);
         // if (upage == NULL)
         //     goto err;
@@ -86,6 +87,8 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
 
         /* TODO: Insert the page into the spt. */
         spt_insert_page(spt, upage);
+        return true;
+        //! END: uninit_new
     }
 err:
     return false;
@@ -100,16 +103,10 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
     //! ADD : find_vme
     struct hash_elem *e;
 
-    page = (struct page *)pg_round_down(va);
+    page->va = pg_round_down(va);
     e = hash_find(&spt->pages, &page->hash_elem);
-    if(e != NULL){
-        page = hash_entry(e, struct page, hash_elem);
-    }
-    else {
-        page = NULL;
-    }
+    return e != NULL ? hash_entry (e, struct page, hash_elem) : NULL;
     //! END : find_vme;;;;;;;
-    return page;
 }
 
 /* Insert PAGE into spt with validation. */
@@ -162,10 +159,9 @@ vm_get_frame(void)
     struct frame *frame = NULL;
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
-    frame = palloc_get_page(PAL_USER);
-    if(frame == NULL) PANIC("todo\n");
+    frame->kva = palloc_get_page(PAL_USER);
+    if(frame->kva == NULL) PANIC("todo\n");
 
-    frame->kva = NULL;
     frame->page = NULL;
     //! END: vm_get_frame
 
@@ -211,6 +207,9 @@ bool vm_claim_page(void *va UNUSED)
 {
     struct page *page = NULL;
     /* TODO: Fill this function */
+    //! ADD: vm_claim_page
+    page = spt_find_page(&thread_current()->spt, va);
+    //! END: vm_claim_page
 
     return vm_do_claim_page(page);
 }
@@ -226,7 +225,9 @@ vm_do_claim_page(struct page *page)
     page->frame = frame;
 
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
-    pml4_set_page();
+    // struct thread *curr = thread_current();
+    if(!pml4_set_page(thread_current()->pml4, page->va, frame->kva, page->writable))
+        return false;
 
     return swap_in(page, frame->kva);
 }
@@ -270,7 +271,7 @@ bool page_less(const struct hash_elem *a_,
     const struct page *a = hash_entry(a_, struct page, hash_elem);
     const struct page *b = hash_entry(b_, struct page, hash_elem);
 
-    return a->addr < b->addr;
+    return a->va < b->va;
 }
 
 bool insert_page(struct hash *pages, struct page *p)
