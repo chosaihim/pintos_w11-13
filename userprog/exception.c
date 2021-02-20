@@ -140,11 +140,15 @@ page_fault (struct intr_frame *f) {
 	write = (f->error_code & PF_W) != 0;
 	user = (f->error_code & PF_U) != 0;
 
-    exit(-1); // for project 2
+    //! ADD: kill 삭제
+    // exit(-1); // for project 2
 #ifdef VM
 	/* For project 3 and later. */
+    // printf("page fault !! \n");
 	if (vm_try_handle_fault (f, fault_addr, user, write, not_present))
-		return;
+        {
+		    return;
+        }
 #endif
 
 	/* Count page faults. */

@@ -169,13 +169,14 @@ vm_evict_frame(void)
 static struct frame *
 vm_get_frame(void)
 {
-    struct frame *frame = NULL;
+    struct frame *frame;
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
     frame->kva = palloc_get_page(PAL_USER);
     if(frame->kva == NULL) PANIC("todo\n");
+    printf("vm_get_page!! \n");
 
-    frame->page = NULL;
+    // frame->page = NULL;
     //! END: vm_get_frame
 
     ASSERT(frame != NULL);
@@ -200,9 +201,14 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
                          bool user UNUSED, bool write UNUSED, bool not_present UNUSED)
 {
     struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
-    struct page *page = NULL;
+    struct page *page;
+    printf("dd\n");
     /* TODO: Validate the fault */
     /* TODO: Your code goes here */
+    //! ADD: modify vm_try_handle_fault
+    page = spt_find_page(spt, addr);
+    // printf("page addr :: %p\n", addr);
+    printf("ee\n");
 
     return vm_do_claim_page(page);
 }
@@ -231,7 +237,9 @@ bool vm_claim_page(void *va UNUSED)
 static bool
 vm_do_claim_page(struct page *page)
 {
+    printf("page addr in vm_do :: %p\n", page);
     struct frame *frame = vm_get_frame();
+    printf("frame addr :: %p\n", frame);
 
     /* Set links */
     frame->page = page;
@@ -239,8 +247,9 @@ vm_do_claim_page(struct page *page)
 
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
     // struct thread *curr = thread_current();
-    if(!pml4_set_page(page->va, frame->kva, page->writable))
-        return false;
+    //! ADD: insert pml4_set_page
+    pml4_set_page(page->va, frame->kva, page->writable);
+    printf("after set page !!!\n");
 
     return swap_in(page, frame->kva);
 }
