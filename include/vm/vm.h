@@ -148,7 +148,7 @@ page_less (const struct hash_elem *a_,
            const struct hash_elem *b_, void *aux UNUSED);
 bool insert_page(struct hash *pages, struct page *p);
 bool delete_page(struct hash *pages, struct page *p);
-void destructor(struct hash_elem *e);
+void spt_destructor(struct hash_elem *e, void* aux);
 
 //! END: Functions for Hash table
 

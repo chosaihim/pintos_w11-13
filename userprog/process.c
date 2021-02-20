@@ -353,7 +353,7 @@ process_exit (void) {
     palloc_free_page(curr->fd_table);
 
     //! ADD: vm_destroy
-    supplemental_page_table_kill(&curr->spt.pages);
+    // supplemental_page_table_kill(&curr->spt);
 
     free_children();
 	/* 순서 주의 */
@@ -991,6 +991,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
         // void *aux = NULL;
+        //! ADD: aux modified
 		void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, aux))
@@ -1022,7 +1023,7 @@ setup_stack (struct intr_frame *if_) {
 		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
 		if (success){
 			if_->rsp = USER_STACK;
-            success = vm_alloc_page(VM_MARKER_0, stack_bottom, true);
+            // success = vm_alloc_page(VM_MARKER_0, stack_bottom, true);
         }
 		else
 			palloc_free_page (kpage);

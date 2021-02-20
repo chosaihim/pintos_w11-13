@@ -54,14 +54,16 @@ static struct frame *vm_evict_frame(void);
 bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writable,
                                     vm_initializer *init, void *aux)
 {
-
+    // printf("============= VM_TYPE :: %d =============\n", type);
     ASSERT(VM_TYPE(type) != VM_UNINIT)
 
     struct supplemental_page_table *spt = &thread_current()->spt;
 
+    // printf("before if PPPPPPPPPPPPPPPPP\n");
     /* Check wheter the upage is already occupied or not. */
     if (spt_find_page(spt, upage) == NULL)
     {
+        // printf("PPPPPPPPPPPPPPPPP\n");
         /* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
 		 * TODO: should modify the field after calling the uninit_new. */
@@ -83,6 +85,7 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
                 break;
         }
         
+        // printf("PPPPPPPPPPP22222222222222\n");
         // bool succ = uninit_initialize(upage, NULL);
         uninit_new(page, upage, init, type, aux, initializer);
 
@@ -90,7 +93,9 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         return spt_insert_page(spt, page);
         //! END: uninit_new
     }
+    // printf("AFTER if PPPPPPPPPPP22222222222222\n");
 err:
+    // printf("FALSESEP22222222222222\n");
     return false;
 }
 
@@ -98,13 +103,21 @@ err:
 struct page *
 spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
 {
-    struct page *page = NULL;
+    struct page page;
     /* TODO: Fill this function. */
     //! ADD : find_vme
-    struct hash_elem *e;
+    // struct hash_elem *e;
 
-    page->va = pg_round_down(va);
-    e = hash_find(&spt->pages, &page->hash_elem);
+    // printf("BEFORE hash find \n");
+    // printf("va :: %d\n", (uint64_t)va);
+    // printf("va :: %d\n", (uint64_t)PGMASK);
+    page.va = pg_round_down(va);
+    // printf("AFTER pg_round_down \n");
+    // printf("spt->pages :: %p\n", &spt->pages);
+    // printf("page->hash_elem :: %p\n", &page.hash_elem);
+    struct hash_elem *e = hash_find(&spt->pages, &page.hash_elem);
+    // printf("AFTER hash find \n");
+    // free(page);
     return e != NULL ? hash_entry (e, struct page, hash_elem) : NULL;
     //! END : find_vme;;;;;;;
 }
@@ -236,7 +249,8 @@ vm_do_claim_page(struct page *page)
 void supplemental_page_table_init(struct supplemental_page_table *spt UNUSED)
 {
     //! ADD: spt init
-    vm_init();
+    // printf("supple &thread_current()->spt.pages :: %p\n", &thread_current()->spt.pages);
+    hash_init(&spt->pages, page_hash, page_less, NULL);
     //! END: spt init
 }
 
@@ -252,7 +266,7 @@ void supplemental_page_table_kill(struct supplemental_page_table *spt UNUSED)
     /* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
     //! ADD: hash_destroy = vm_destroy
-    hash_destroy (&spt->pages, destructor);
+    hash_clear (&spt->pages, spt_destructor);
 }
 
 //! ADD: Functions for hash table
@@ -261,8 +275,9 @@ unsigned
 page_hash(const struct hash_elem *p_, void *aux UNUSED)
 {
     const struct page *p = hash_entry(p_, struct page, hash_elem);
-    return hash_bytes(&p->va, sizeof p->va);
+    return hash_bytes(&p->va, sizeof(p->va));
 }
+
 /* Returns true if page a precedes page b. */
 //! ADD: page_less = vm_less_func
 bool page_less(const struct hash_elem *a_,
@@ -290,7 +305,7 @@ bool delete_page(struct hash *pages, struct page *p)
 }
 
 //! ADD: destructor
-void destructor(struct hash_elem *e)
+void spt_destructor(struct hash_elem *e, void* aux)
 {
     const struct page *p = hash_entry(e, struct page, hash_elem);
     vm_dealloc_page(p);

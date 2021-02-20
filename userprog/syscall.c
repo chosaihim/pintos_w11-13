@@ -12,6 +12,8 @@
 #include "filesys/file.h"
 #include "lib/kernel/console.h"
 #include "userprog/process.h"
+//! ADD: for palloc
+#include "threads/palloc.h"
 
 /* ADD header for page fault */
 // #include "userprog/exception.h"

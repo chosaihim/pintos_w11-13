@@ -13,16 +13,15 @@ Formatting file system...done.
 Boot complete.
 Putting 'args-none' into the file system...
 Executing 'args-none':
-Kernel PANIC at ../../threads/interrupt.c:213 in register_handler(): assertion `intr_handlers[vec_no] == NULL' failed.
-Call stack: 0x8004216b4b 0x80042086a7 0x8004208c92 0x80042202d9 0x800421f894 0x800421fe11 0x800421a1ad 0x80042077b2.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 56 ticks
-Thread: 30 idle ticks, 26 kernel ticks, 0 user ticks
+args-none: exit(-1)
+Execution of 'args-none' complete.
+Timer: 59 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 0 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 34 reads, 232 writes
+hd0:1: 41 reads, 232 writes
 hd1:0: 102 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1249 characters output
-Key
+Console: 914 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

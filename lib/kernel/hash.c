@@ -121,7 +121,11 @@ hash_replace (struct hash *h, struct hash_elem *new) {
    null pointer if no equal element exists in the table. */
 struct hash_elem *
 hash_find (struct hash *h, struct hash_elem *e) {
-	return find_elem (h, find_bucket (h, e), e);
+    // printf("in the before hash find\n");
+    struct hash_elem *tmp = find_elem (h, find_bucket (h, e), e);
+    // printf("tmp addr :: %p\n", tmp);
+    return tmp;
+	// return find_elem (h, find_bucket (h, e), e);
 }
 
 /* Finds, removes, and returns an element equal to E in hash
