@@ -178,6 +178,8 @@ void exit(int status) {
     struct thread *curr = thread_current();
     curr->exit_status = status;
     curr->is_exit = 1; // be dead by exit syscall!
+    // hex_dump(USER_STACK-PGSIZE, (void *)(USER_STACK-PGSIZE), PGSIZE, 1);
+    // printf("여기 들어옴??\n");
     printf("%s: exit(%d)\n", thread_current()->name, thread_current()->exit_status);
     thread_exit();
 }

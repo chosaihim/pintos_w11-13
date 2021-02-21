@@ -279,12 +279,12 @@ process_exec (void *f_name) {
 	/* store argument before exec user programs */
 	argument_stack(argv, argc, &_if);
 	// hex_dump(_if.rsp, _if.rsp, USER_STACK-_if.rsp, true);
+	// printf("if->rdi %d\n", (int)_if->rdi);
 
 	/* exec으로 넘어온 인자는 kernel_vaddr이 아니다!! -- register 값 바로 빼오고있음 */
 	if(is_kernel_vaddr(file_name))
 		palloc_free_page (file_name); /* 결국 file_name 은 palloc get page 됐던, fn_copy였다. */
 
-	// printf("여기서 터짐?\n");
 	/* load success ?!*/
 	// thread_current()->is_load = 1;
 	/* Start switched process. */
@@ -977,13 +977,13 @@ lazy_load_segment (struct page *page, void *aux) {
 	// printf("page 주소 :: %p\n", page->frame->page);
 	// printf("frame 주소 :: %p\n", page->frame);
 	file_seek (file, ofs);
-    // printf("lazy load file ofs :: %d\n", ofs);
-    // printf("lazy load file file pos :: %d\n", file->pos);
 	// printf("%p\n", file);
+    // printf("lazy load file ofs :: %d\n", ofs);
     if (file_read (file, page->frame->kva, page_read_bytes) != (int) page_read_bytes) {
         palloc_free_page (page->frame->kva);
         return false;
     }
+    // printf("lazy load file file pos :: %d\n", file->pos);
     memset (page->frame->kva + page_read_bytes, 0, page_zero_bytes);
     // /* Add the page to the process's address space. */
 	// vm_claim_page(page->va);
@@ -1038,7 +1038,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		// void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
 		// printf("load segment file pos :: %d\n", file->pos);
 		// printf("load segment offset :: %d\n", ofs);
-        struct box *box = (struct box*)malloc(sizeof(struct box));
+        struct box *box = malloc(sizeof(struct box));
+		// file_seek(file, ofs);
         box->file = file;
 		// box->file->pos = ofs;
 		// box->file->deny_write = !(writable);
@@ -1054,12 +1055,14 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 			return false;
 		// free(box);
 		// printf("================ in the load seg ========== \n\n");
-		// hex_dump(upage, upage, PGSIZE, true);
+		// hex_dump(page->va, page->va, PGSIZE, true);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
+		ofs += page_read_bytes;
 	}
+	// printf("스레드 이름 5 : %s\n", thread_name());
 	return true;
 }
 
@@ -1079,7 +1082,7 @@ setup_stack (struct intr_frame *if_) {
 	// printf("USER_STACK addr :: %p\n", USER_STACK);
 	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
 	if (kpage != NULL) {
-		success = install_page (stack_bottom, kpage, true);
+		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
 		// success = vm_alloc_page(VM_MARKER_0, kpage, true);
         // success = vm_claim_page(stack_bottom);
 		if (success){

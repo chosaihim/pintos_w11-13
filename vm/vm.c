@@ -102,6 +102,8 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         // page->read_bytes = box->page_read_bytes;
         // page->zero_bytes = PGSIZE - box->page_read_bytes;
         page->writable = writable;
+        // printf("page의 va :: %p\n", page->va);
+        // hex_dump(page->va, page->va, PGSIZE, true);
 
         /* TODO: Insert the page into the spt. */
         return spt_insert_page(spt, page);
@@ -117,7 +119,8 @@ err:
 struct page *
 spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
 {
-    struct page* page;
+    //! malloc을 해야 스레드 이름이 안없어진다...;
+    struct page* page = (struct page*)malloc(sizeof(struct page));
     /* TODO: Fill this function. */
     //! ADD : find_vme
     struct hash_elem *e;
@@ -132,7 +135,8 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
     e = hash_find(&spt->pages, &page->hash_elem);
     // printf("e :: %p", e);
     // printf("AFTER hash find \n");
-    // free(page);
+    //! malloc을 해야 스레드 이름이 안없어진다...;
+    free(page);
     return e != NULL ? hash_entry (e, struct page, hash_elem) : NULL;
     //! END : find_vme;;;;;;;
 }
@@ -144,8 +148,7 @@ bool spt_insert_page(struct supplemental_page_table *spt UNUSED,
     int succ = false;
     /* TODO: Fill this function. */
     //! ADD: vm_insert
-    struct hash_elem *e = hash_insert(&spt->pages, &page->hash_elem);
-    if (e == NULL)
+    if(hash_insert(&spt->pages, &page->hash_elem) == NULL)
     {
         succ = true;
     }
@@ -187,10 +190,10 @@ vm_evict_frame(void)
 static struct frame *
 vm_get_frame(void)
 {
-    struct frame *frame = palloc_get_page(PAL_USER);
+    struct frame *frame = palloc_get_page(PAL_USER | PAL_ZERO);
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
-    frame->kva = palloc_get_page(PAL_USER);
+    frame->kva = palloc_get_page(PAL_USER | PAL_ZERO);
     if(frame == NULL)
     {
         PANIC("todo\n");
@@ -233,15 +236,19 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
     // printf("addr :: %p\n", addr);
     // printf("page->va 주소 :: %p\n", page->va);
     // if (page == NULL) return false;
+    if(is_kernel_vaddr(addr))
+    {
+        return false;
+    }
+
     if (not_present){
 
         // printf("ee\n");
         // printf("here?? 22\n");
         return vm_claim_page(addr);
     }
-    else
-        // printf("here?? 33\n");
-        return false;
+    
+    return false;
 
 }
 
@@ -256,7 +263,7 @@ void vm_dealloc_page(struct page *page)
 /* Claim the page that allocate on VA. */
 bool vm_claim_page(void *va UNUSED)
 {
-    struct page *page = NULL;
+    struct page *page;
     /* TODO: Fill this function */
     //! ADD: vm_claim_page
     // printf("spt_find_page %p\n", spt_find_page);

@@ -146,7 +146,8 @@ page_fault (struct intr_frame *f) {
     //! ADD: kill 삭제
 #ifdef VM
 	/* For project 3 and later. */
-    printf("page fault !! %p\n", fault_addr);
+    // printf("page fault at !! %p\n", f->rip);
+    // printf("page fault !! %p\n", fault_addr);
 	if (vm_try_handle_fault (f, fault_addr, user, write, not_present)){
 
         // printf("page fault case\n\n");
