@@ -90,6 +90,16 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         // bool succ = uninit_initialize(upage, NULL);
         uninit_new(page, upage, init, type, aux, initializer);
 
+        //! page member 초기화
+        struct box* box = (struct box *)aux;
+
+        page->type = type;
+        page->vafile = box->file;
+        page->offset = box->ofs;
+        page->read_bytes = box->page_read_bytes;
+        page->zero_bytes = PGSIZE - box->page_read_bytes;
+        page->writable = box->writable;
+
         /* TODO: Insert the page into the spt. */
         return spt_insert_page(spt, page);
         //! END: uninit_new
@@ -178,7 +188,7 @@ vm_get_frame(void)
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
     frame->kva = palloc_get_page(PAL_ZERO | PAL_USER);
-    if(frame == NULL | frame->kva == NULL)
+    if(frame == NULL || frame->kva == NULL)
     {
         PANIC("todo\n");
     }

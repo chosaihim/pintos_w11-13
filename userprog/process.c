@@ -927,14 +927,14 @@ install_page (void *upage, void *kpage, bool writable) {
 			&& pml4_set_page (t->pml4, upage, kpage, writable));
 }
 
-//! ADD: aux 구조체
-struct box {
-    struct file *file;
-    uint8_t *upage;
-    size_t page_read_bytes;
-    size_t page_zero_bytes;
-    bool writable;
-};
+// //! ADD: aux 구조체
+// struct box {
+//     struct file *file;
+//     size_t ofs;
+//     size_t page_read_bytes;
+//     size_t page_zero_bytes;
+//     bool writable;
+// };
 
 static bool
 lazy_load_segment (struct page *page, void *aux) {
@@ -944,21 +944,22 @@ lazy_load_segment (struct page *page, void *aux) {
     //! ADD: lazy_load_segment
     //! 이게 맞나?; aux[0]을 *file로 casting하고 싶어서, 참조 가능한 이중 void 포인터로((void **)aux) 먼저 캐스팅
     // printf("lazy load init !!\n");
-    // struct file *file = (struct file *)(((void **)aux)[0]);
-    // uint8_t *upage = (uint8_t *)(((void **)aux)[1]);
-    // size_t page_read_bytes = *(size_t *)(((void **)aux)[2]);
-    // size_t page_zero_bytes = *(size_t *)(((void **)aux)[3]);
-    // bool writable = *(bool *)(((void **)aux)[4]);
+	// TODO : page 구조체 member로 넣어놓은 것들 불러오기
+    struct file *file = page->vafile;
+    size_t page_read_bytes = page->read_bytes;
+    size_t page_zero_bytes = page->zero_bytes;
+    bool writable = page->writable;
 
-    struct file *file = ((struct box *)aux)->file;
-    uint8_t *upage = ((struct box *)aux)->upage;
-    size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
-    size_t page_zero_bytes = ((struct box *)aux)->page_zero_bytes;
-    bool writable = ((struct box *)aux)->writable;
-    // printf("read_byte :: %d\n", page_read_bytes);
+    // struct file *file = ((struct box *)aux)->file;
+    // uint8_t *upage = ((struct box *)aux)->upage;
+    // size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
+    // size_t page_zero_bytes = ((struct box *)aux)->page_zero_bytes;
+    // bool writable = ((struct box *)aux)->writable;
+    printf("read_byte :: %d\n", page_read_bytes);
     // printf("zero_byte :: %d\n", page_zero_bytes);
     // printf("file :: %p\n", file);
-    // printf("file ofs :: %d\n", file->pos);
+    printf("file ofs :: %d\n", file->pos);
+	printf("is writable :: %d\n", writable);
 
     /* Get a page of memory. */
     // uint8_t *kpage = palloc_get_page (PAL_USER);
@@ -980,7 +981,7 @@ lazy_load_segment (struct page *page, void *aux) {
     // }
     // printf("here??\n");
     // printf("upage-va :: %p\n", page->va);
-    hex_dump(page->va, page->va, PGSIZE, true);
+    // hex_dump(page->va, page->va, PGSIZE, true);
     free(aux);
     return true;
     //! END: insert of lazy_load_segment
@@ -1023,9 +1024,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		// void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
         struct box *box = (struct box*)malloc(sizeof(struct box));
         box->file = file;
-        box->upage = upage;
+        box->ofs = ofs;
         box->page_read_bytes = page_read_bytes;
-        box->page_zero_bytes = page_zero_bytes;
         box->writable = writable;
         // printf("upage :: %p\n", upage);
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,

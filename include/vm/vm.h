@@ -30,6 +30,7 @@ enum vm_type
 #include "vm/anon.h"
 #include "vm/file.h"
 #include "lib/kernel/hash.h"
+
 #ifdef EFILESYS
 #include "filesys/page_cache.h"
 #endif
@@ -56,7 +57,7 @@ struct page
     void *vaddr;        /* vm_entry가관리하는가상페이지번호*/
     bool writable;      /* True일경우해당주소에write 가능 False일경우해당주소에write 불가능*/
     bool is_loaded;     /* 물리메모리의탑재여부를알려주는플래그*/
-    struct file *ffile;  /* 가상주소와맵핑된파일*/
+    struct file *vafile;  /* 가상주소와맵핑된파일*/
     
     /* Memory Mapped File 에서다룰예정*/
     struct list_elem mmap_elem;/* mmap리스트element */

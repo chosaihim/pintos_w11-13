@@ -2,6 +2,7 @@
 #define USERPROG_PROCESS_H
 
 #include "threads/thread.h"
+#include <stdbool.h>
 
 tid_t process_create_initd (const char *file_name);
 tid_t process_fork (const char *name, struct intr_frame *if_);
@@ -19,4 +20,11 @@ bool check_excutable(struct file *file);
 void free_children(void);
 //! ADD: VM
 bool install_page (void *upage, void *kpage, bool writable);
+//! ADD: aux 구조체
+struct box {
+    struct file *file;
+    size_t ofs;
+    size_t page_read_bytes;
+    bool writable;
+};
 #endif /* userprog/process.h */
