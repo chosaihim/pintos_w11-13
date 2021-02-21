@@ -50,7 +50,7 @@ uninit_initialize (struct page *page, void *kva) {
 	/* Fetch first, page_initialize may overwrite the values */
 	vm_initializer *init = uninit->init;
 	void *aux = uninit->aux;
-    // printf("여기 들어감?\n");
+    // printf("aux->ofs :: %d\n", ((struct box*)aux)->ofs);
 
 	/* TODO: You may need to fix this function. */
 	return uninit->page_initializer (page, uninit->type, kva) &&

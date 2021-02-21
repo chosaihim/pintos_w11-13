@@ -955,15 +955,15 @@ lazy_load_segment (struct page *page, void *aux) {
     // bool writable = page->writable;
 
     struct file *file = ((struct box *)aux)->file;
-	// size_t ofs = ((struct box*)aux)->ofs;
-    uint8_t *upage = ((struct box *)aux)->upage;
+	off_t ofs = ((struct box*)aux)->ofs;
+    // uint8_t *upage = ((struct box *)aux)->upage;
     size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
     size_t page_zero_bytes = PGSIZE - page_read_bytes;
-    bool writable = ((struct box *)aux)->writable;
+    // bool writable = ((struct box *)aux)->writable;
     // printf("read_byte :: %d\n", page_read_bytes);
     // printf("zero_byte :: %d\n", page_zero_bytes);
     // printf("file :: %p\n", file);
-	file->deny_write = !writable;
+	// file->deny_write = !writable;
 	// printf("is writable :: %d\n", writable);
 	// printf("file deny write :: %d\n", file->deny_write);
 
@@ -974,8 +974,9 @@ lazy_load_segment (struct page *page, void *aux) {
 
     /* Load this page. */
 	// printf("page 주소 :: %p\n", page);
+	// printf("page 주소 :: %p\n", page->frame->page);
 	// printf("frame 주소 :: %p\n", page->frame);
-	// file_seek (file, ofs);
+	file_seek (file, ofs);
     // printf("lazy load file ofs :: %d\n", ofs);
     // printf("lazy load file file pos :: %d\n", file->pos);
 	// printf("%p\n", file);
@@ -1021,7 +1022,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
 
-    file_seek(file, ofs);
+    // file_seek(file, ofs);
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_READ_BYTES bytes from FILE
@@ -1041,10 +1042,10 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         box->file = file;
 		// box->file->pos = ofs;
 		// box->file->deny_write = !(writable);
-		box->upage = upage;
-        // box->ofs = ofs;
+		// box->upage = upage;
+        box->ofs = ofs;
         box->page_read_bytes = page_read_bytes;
-        box->writable = writable;
+        // box->writable = writable;
         // printf("upage :: %p\n", upage);
 		// printf("load_seg writable :: %d\n", writable);
 		// printf("file %p\n",file);
@@ -1052,8 +1053,8 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 					writable, lazy_load_segment, box))
 			return false;
 		// free(box);
-		printf("================ in the load seg ========== \n\n");
-		hex_dump(upage, upage, PGSIZE, true);
+		// printf("================ in the load seg ========== \n\n");
+		// hex_dump(upage, upage, PGSIZE, true);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;

@@ -140,13 +140,16 @@ page_fault (struct intr_frame *f) {
 	write = (f->error_code & PF_W) != 0;
 	user = (f->error_code & PF_U) != 0;
 
+	// printf("not_preset :: %d\n", not_present);
+	// printf("write :: %d\n", write);
+
     //! ADD: kill 삭제
 #ifdef VM
 	/* For project 3 and later. */
     printf("page fault !! %p\n", fault_addr);
 	if (vm_try_handle_fault (f, fault_addr, user, write, not_present)){
 
-        // printf("page fault\n");
+        // printf("page fault case\n\n");
 		return;
     }
 #endif

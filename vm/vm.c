@@ -59,10 +59,10 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
 
     struct supplemental_page_table *spt = &thread_current()->spt;
 
-    // printf("upage addr :: %p\n", upage);
     /* Check wheter the upage is already occupied or not. */
     if (spt_find_page(spt, upage) == NULL)
     {
+        // printf("upage addr :: %p\n", upage);
         // printf("PPPPPPPPPPPPPPPPP\n");
         /* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
@@ -97,11 +97,11 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
 
         // page->type = type;
         // page->vafile = box->file;
-        // page->vaddr = box->upage;
+        // page->va = upage;
         // page->offset = box->ofs;
         // page->read_bytes = box->page_read_bytes;
         // page->zero_bytes = PGSIZE - box->page_read_bytes;
-        // page->writable = box->writable;
+        page->writable = writable;
 
         /* TODO: Insert the page into the spt. */
         return spt_insert_page(spt, page);
@@ -125,7 +125,7 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
     // printf("BEFORE hash find \n");
     // printf("va :: %p\n", va);
     page->va = pg_round_down(va);
-    // printf("page.va :: %p\n", page.va);
+    // printf("page.va :: %p\n", page->va);
     // printf("AFTER pg_round_down \n");
     // printf("spt->pages :: %p\n", &spt->pages);
     // printf("page->hash_elem :: %p\n", &page.hash_elem);
@@ -187,10 +187,10 @@ vm_evict_frame(void)
 static struct frame *
 vm_get_frame(void)
 {
-    struct frame *frame = palloc_get_page(PAL_ZERO | PAL_USER);
+    struct frame *frame = palloc_get_page(PAL_USER);
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
-    frame->kva = palloc_get_page(PAL_ZERO | PAL_USER);
+    frame->kva = palloc_get_page(PAL_USER);
     if(frame == NULL)
     {
         PANIC("todo\n");
@@ -221,23 +221,26 @@ vm_handle_wp(struct page *page UNUSED)
 bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
                          bool user UNUSED, bool write UNUSED, bool not_present UNUSED)
 {
+    // printf("here??\n");
     struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
-    struct page *page = NULL;
-    // printf("addr :: %p\n", addr);
+    // struct page *page = NULL;
     /* TODO: Validate the fault */
     /* TODO: Your code goes here */
     //! ADD: modify vm_try_handle_fault
 
-    page = spt_find_page(spt, addr);
-    // printf("page->va 주소 :: %p\n", page->va);
-    if (page == NULL) return false;
     // printf("page addr :: %p\n", addr);
+    // struct page* page = spt_find_page(spt, addr);
+    // printf("addr :: %p\n", addr);
+    // printf("page->va 주소 :: %p\n", page->va);
+    // if (page == NULL) return false;
     if (not_present){
 
         // printf("ee\n");
-        return vm_do_claim_page(page);
+        // printf("here?? 22\n");
+        return vm_claim_page(addr);
     }
     else
+        // printf("here?? 33\n");
         return false;
 
 }
@@ -256,6 +259,7 @@ bool vm_claim_page(void *va UNUSED)
     struct page *page = NULL;
     /* TODO: Fill this function */
     //! ADD: vm_claim_page
+    // printf("spt_find_page %p\n", spt_find_page);
     page = spt_find_page(&thread_current()->spt, va);
     // page = (struct page*)malloc(sizeof(struct page));
     // page = palloc_get_page(PAL_ZERO | PAL_USER);
@@ -289,9 +293,9 @@ vm_do_claim_page(struct page *page)
     // printf("frame->kva :: %p\n", frame->kva);
     if(install_page(page->va, frame->kva, page->writable))
     {
-        // printf("여기서 터지나요??\n");
         return swap_in(page, frame->kva);
     }
+    // printf("여기서 터지나요??\n");
     return false;
     
 }
@@ -319,7 +323,16 @@ void supplemental_page_table_kill(struct supplemental_page_table *spt UNUSED)
     /* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
     //! ADD: hash_destroy = vm_destroy
-    hash_clear (&spt->pages, spt_destructor);
+    // hash_clear (&spt->pages, spt_destructor);
+
+    struct hash_iterator i;
+
+    hash_first (&i, &spt->pages);
+    while (hash_next (&i))
+    {
+        struct page *page = hash_entry (hash_cur (&i), struct page, hash_elem);
+        destroy(page);
+    }
 }
 
 //! ADD: Functions for hash table
