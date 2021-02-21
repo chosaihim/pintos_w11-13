@@ -24,7 +24,7 @@ void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
 /* 헤더에 넣으면 오류가 나요 */
-struct page* check_address(void *addr);
+void* check_address(void *addr);
 // void get_frame_argument(void *rsp, int *arg);
 
 
@@ -80,7 +80,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
             break;
         case SYS_EXEC :
             //! ADD: insert check_valid_string
-            check_valid_string(f->R.rdi, f->rsp);
+            // check_valid_string(f->R.rdi, f->rsp);
             f->R.rax = exec(f->R.rdi);
             break;
         case SYS_WAIT:  
@@ -94,7 +94,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
             break;
         case SYS_OPEN :
             //! ADD: insert check_valid_string
-            check_valid_string(f->R.rdi, f->rsp);
+            // check_valid_string(f->R.rdi, f->rsp);
             f->R.rax = open(f->R.rdi);
             break;
         case SYS_FILESIZE:
@@ -102,11 +102,11 @@ syscall_handler (struct intr_frame *f UNUSED) {
             break;
         case SYS_READ:
             //! ADD: insert check_valid_buffer instead of check_address
-            check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 0);
+            // check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 0);
             f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
             break;
         case SYS_WRITE:
-            check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 1);
+            // check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 1);
             //! ADD:가 아니라 check_valid_string 만들지 않음(PPT랑 다름)
             f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
             break;
@@ -125,48 +125,48 @@ syscall_handler (struct intr_frame *f UNUSED) {
 
 /*** It could be dangerous ***/
 //! ADD: check_address
-struct page* check_address(void *addr){
+void* check_address(void *addr){
     if (is_kernel_vaddr(addr))
     {
         exit(-1);
     }
-    return spt_find_page(&thread_current()->spt, addr);
+    // return spt_find_page(&thread_current()->spt, addr);
 }
 //! END: check_address
 
-//! ADD: check_valid_buffer
-void check_valid_buffer(void* buffer, unsigned size, void* rsp, bool to_write)
-{
-    /* 인자로받은buffer부터buffer + size까지의크기가한페이지의크기를넘을수도있음*/
-    /*check_address를이용해서주소의유저영역여부를검사함과동시에vm_entry구조체를얻음*/
-    /* 해당주소에대한vm_entry존재여부와vm_entry의writable멤버가true인지검사*/
-    /* 위내용을buffer부터buffer + size까지의주소에포함되는vm_entry들에대해적용*/
-    for(int i = 0; i <= size; i++)
-    {
-        struct page* page = check_address((char *)buffer + i);
-        if(page != NULL)
-        {
-            if(to_write == true)
-            {
-                if(page->writable == false)
-                {
-                    exit(-1);
-                }
+// //! ADD: check_valid_buffer
+// void check_valid_buffer(void* buffer, unsigned size, void* rsp, bool to_write)
+// {
+//     /* 인자로받은buffer부터buffer + size까지의크기가한페이지의크기를넘을수도있음*/
+//     /*check_address를이용해서주소의유저영역여부를검사함과동시에vm_entry구조체를얻음*/
+//     /* 해당주소에대한vm_entry존재여부와vm_entry의writable멤버가true인지검사*/
+//     /* 위내용을buffer부터buffer + size까지의주소에포함되는vm_entry들에대해적용*/
+//     for(int i = 0; i <= size; i++)
+//     {
+//         struct page* page = check_address((char *)buffer + i);
+//         if(page != NULL)
+//         {
+//             if(to_write == true)
+//             {
+//                 if(page->writable == false)
+//                 {
+//                     exit(-1);
+//                 }
 
-            }
-        }
-    }
-}
-//! END: check_valid_buffer
+//             }
+//         }
+//     }
+// }
+// //! END: check_valid_buffer
 
-// //! ADD: check_valid_string
-void check_valid_string(const void *str, void *rsp)
-{
-	if(check_address(str) == NULL)
-    {
-        exit(-1);
-    }
-}
+// // //! ADD: check_valid_string
+// void check_valid_string(const void *str, void *rsp)
+// {
+// 	if(check_address(str) == NULL)
+//     {
+//         exit(-1);
+//     }
+// }
 
 // //! END: check_valid_string
 

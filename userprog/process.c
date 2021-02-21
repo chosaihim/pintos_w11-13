@@ -73,6 +73,7 @@ initd (void *f_name) {
     
 	if (process_exec (f_name) < 0)
 		PANIC("Fail to launch initd\n");
+	// printf("hello\n");
 	NOT_REACHED ();
 }
 
@@ -283,6 +284,7 @@ process_exec (void *f_name) {
 	if(is_kernel_vaddr(file_name))
 		palloc_free_page (file_name); /* 결국 file_name 은 palloc get page 됐던, fn_copy였다. */
 
+	// printf("여기서 터짐?\n");
 	/* load success ?!*/
 	// thread_current()->is_load = 1;
 	/* Start switched process. */
@@ -858,6 +860,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 			return false;
 		}
 		memset (kpage + page_read_bytes, 0, page_zero_bytes);
+		// hex_dump(kpage, kpage, PGSIZE, true);
 
 		/* Add the page to the process's address space. */
 		if (!install_page (upage, kpage, writable)) {
@@ -945,21 +948,24 @@ lazy_load_segment (struct page *page, void *aux) {
     //! 이게 맞나?; aux[0]을 *file로 casting하고 싶어서, 참조 가능한 이중 void 포인터로((void **)aux) 먼저 캐스팅
     // printf("lazy load init !!\n");
 	// TODO : page 구조체 member로 넣어놓은 것들 불러오기
-    struct file *file = page->vafile;
-    size_t page_read_bytes = page->read_bytes;
-    size_t page_zero_bytes = page->zero_bytes;
-    bool writable = page->writable;
+    // struct file *file = page->vafile;
+	// void* upage = page->vaddr;
+    // size_t page_read_bytes = page->read_bytes;
+    // size_t page_zero_bytes = page->zero_bytes;
+    // bool writable = page->writable;
 
-    // struct file *file = ((struct box *)aux)->file;
-    // uint8_t *upage = ((struct box *)aux)->upage;
-    // size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
-    // size_t page_zero_bytes = ((struct box *)aux)->page_zero_bytes;
-    // bool writable = ((struct box *)aux)->writable;
-    printf("read_byte :: %d\n", page_read_bytes);
+    struct file *file = ((struct box *)aux)->file;
+	// size_t ofs = ((struct box*)aux)->ofs;
+    uint8_t *upage = ((struct box *)aux)->upage;
+    size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
+    size_t page_zero_bytes = PGSIZE - page_read_bytes;
+    bool writable = ((struct box *)aux)->writable;
+    // printf("read_byte :: %d\n", page_read_bytes);
     // printf("zero_byte :: %d\n", page_zero_bytes);
     // printf("file :: %p\n", file);
-    printf("file ofs :: %d\n", file->pos);
-	printf("is writable :: %d\n", writable);
+	file->deny_write = !writable;
+	// printf("is writable :: %d\n", writable);
+	// printf("file deny write :: %d\n", file->deny_write);
 
     /* Get a page of memory. */
     // uint8_t *kpage = palloc_get_page (PAL_USER);
@@ -967,13 +973,19 @@ lazy_load_segment (struct page *page, void *aux) {
     //     return false;
 
     /* Load this page. */
+	// printf("page 주소 :: %p\n", page);
+	// printf("frame 주소 :: %p\n", page->frame);
+	// file_seek (file, ofs);
+    // printf("lazy load file ofs :: %d\n", ofs);
+    // printf("lazy load file file pos :: %d\n", file->pos);
+	// printf("%p\n", file);
     if (file_read (file, page->frame->kva, page_read_bytes) != (int) page_read_bytes) {
         palloc_free_page (page->frame->kva);
         return false;
     }
     memset (page->frame->kva + page_read_bytes, 0, page_zero_bytes);
-
     // /* Add the page to the process's address space. */
+	// vm_claim_page(page->va);
     // if (!install_page (upage, kpage, writable)) {
     //     printf("fail\n");
     //     palloc_free_page (kpage);
@@ -981,6 +993,7 @@ lazy_load_segment (struct page *page, void *aux) {
     // }
     // printf("here??\n");
     // printf("upage-va :: %p\n", page->va);
+	// printf("================= in the lazy =================\n\n");
     // hex_dump(page->va, page->va, PGSIZE, true);
     free(aux);
     return true;
@@ -1008,7 +1021,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
 
-    file_seek (file, ofs);
+    file_seek(file, ofs);
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_READ_BYTES bytes from FILE
@@ -1022,16 +1035,25 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         // void *aux = NULL;
         //! ADD: aux modified
 		// void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
+		// printf("load segment file pos :: %d\n", file->pos);
+		// printf("load segment offset :: %d\n", ofs);
         struct box *box = (struct box*)malloc(sizeof(struct box));
         box->file = file;
-        box->ofs = ofs;
+		// box->file->pos = ofs;
+		// box->file->deny_write = !(writable);
+		box->upage = upage;
+        // box->ofs = ofs;
         box->page_read_bytes = page_read_bytes;
         box->writable = writable;
         // printf("upage :: %p\n", upage);
+		// printf("load_seg writable :: %d\n", writable);
+		// printf("file %p\n",file);
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, box))
 			return false;
-
+		// free(box);
+		printf("================ in the load seg ========== \n\n");
+		hex_dump(upage, upage, PGSIZE, true);
 		/* Advance. */
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
@@ -1052,10 +1074,12 @@ setup_stack (struct intr_frame *if_) {
 	/* TODO: Your code goes here */
     //! ADD: setup_stack
     uint8_t *kpage;
-
+	// printf("stack_bottom addr :: %p\n", stack_bottom);
+	// printf("USER_STACK addr :: %p\n", USER_STACK);
 	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
 	if (kpage != NULL) {
 		success = install_page (stack_bottom, kpage, true);
+		// success = vm_alloc_page(VM_MARKER_0, kpage, true);
         // success = vm_claim_page(stack_bottom);
 		if (success){
             // printf("here??\n");

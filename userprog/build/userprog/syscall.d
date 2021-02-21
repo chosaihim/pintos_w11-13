@@ -11,4 +11,5 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/threads/pte.h ../../include/threads/vaddr.h \
  ../../include/threads/init.h ../../include/filesys/filesys.h \
  ../../include/filesys/off_t.h ../../include/filesys/file.h \
- ../../include/lib/kernel/console.h ../../include/userprog/process.h
+ ../../include/lib/kernel/console.h ../../include/userprog/process.h \
+ ../../include/threads/palloc.h

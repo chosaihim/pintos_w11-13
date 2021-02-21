@@ -80,9 +80,11 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         switch(type){
             case VM_ANON:
                 initializer = anon_initializer;
+                // uninit_new(page, upage, init, type, aux, anon_initializer);
                 break;
             case VM_FILE:
                 initializer = file_backed_initializer;
+                // uninit_new(page, upage, init, type, aux, file_backed_initializer);
                 break;
         }
         
@@ -91,14 +93,15 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         uninit_new(page, upage, init, type, aux, initializer);
 
         //! page member 초기화
-        struct box* box = (struct box *)aux;
+        // struct box* box = (struct box *)aux;
 
-        page->type = type;
-        page->vafile = box->file;
-        page->offset = box->ofs;
-        page->read_bytes = box->page_read_bytes;
-        page->zero_bytes = PGSIZE - box->page_read_bytes;
-        page->writable = box->writable;
+        // page->type = type;
+        // page->vafile = box->file;
+        // page->vaddr = box->upage;
+        // page->offset = box->ofs;
+        // page->read_bytes = box->page_read_bytes;
+        // page->zero_bytes = PGSIZE - box->page_read_bytes;
+        // page->writable = box->writable;
 
         /* TODO: Insert the page into the spt. */
         return spt_insert_page(spt, page);
@@ -120,7 +123,7 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
     struct hash_elem *e;
 
     // printf("BEFORE hash find \n");
-    // printf("va :: %d\n", (uint64_t)PGMASK);
+    // printf("va :: %p\n", va);
     page->va = pg_round_down(va);
     // printf("page.va :: %p\n", page.va);
     // printf("AFTER pg_round_down \n");
@@ -188,7 +191,7 @@ vm_get_frame(void)
     /* TODO: Fill this function. */
     //! ADD: vm_get_frame
     frame->kva = palloc_get_page(PAL_ZERO | PAL_USER);
-    if(frame == NULL || frame->kva == NULL)
+    if(frame == NULL)
     {
         PANIC("todo\n");
     }
@@ -226,7 +229,7 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
     //! ADD: modify vm_try_handle_fault
 
     page = spt_find_page(spt, addr);
-    // printf("page 주소 :: %p\n", page);
+    // printf("page->va 주소 :: %p\n", page->va);
     if (page == NULL) return false;
     // printf("page addr :: %p\n", addr);
     if (not_present){
@@ -254,8 +257,11 @@ bool vm_claim_page(void *va UNUSED)
     /* TODO: Fill this function */
     //! ADD: vm_claim_page
     page = spt_find_page(&thread_current()->spt, va);
+    // page = (struct page*)malloc(sizeof(struct page));
+    // page = palloc_get_page(PAL_ZERO | PAL_USER);
+    // page->va = palloc_get_page(PAL_ZERO | PAL_USER);
     //! END: vm_claim_page
-    // printf("여기서 터지나요??\n");
+    // printf("page 주소 :: %p\n", page);
 
     return vm_do_claim_page(page);
 }

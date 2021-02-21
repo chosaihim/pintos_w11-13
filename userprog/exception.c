@@ -127,7 +127,7 @@ page_fault (struct intr_frame *f) {
 	   accessed to cause the fault.  It may point to code or to
 	   data.  It is not necessarily the address of the instruction
 	   that caused the fault (that's f->rip). */
-
+	
 	fault_addr = (void *) rcr2();
 
 	/* Turn interrupts back on (they were only off so that we could
@@ -141,7 +141,6 @@ page_fault (struct intr_frame *f) {
 	user = (f->error_code & PF_U) != 0;
 
     //! ADD: kill 삭제
-    // exit(-1); // for project 2
 #ifdef VM
 	/* For project 3 and later. */
     printf("page fault !! %p\n", fault_addr);
@@ -151,6 +150,7 @@ page_fault (struct intr_frame *f) {
 		return;
     }
 #endif
+    // exit(-1); // for project 2
 
 	/* Count page faults. */
 	page_fault_cnt++;

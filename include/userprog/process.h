@@ -19,11 +19,12 @@ void process_close_file(int fd);
 bool check_excutable(struct file *file);
 void free_children(void);
 //! ADD: VM
-bool install_page (void *upage, void *kpage, bool writable);
+// bool install_page (void *upage, void *kpage, bool writable);
 //! ADD: aux 구조체
 struct box {
     struct file *file;
-    size_t ofs;
+    uint8_t* upage;
+    off_t ofs;
     size_t page_read_bytes;
     bool writable;
 };
