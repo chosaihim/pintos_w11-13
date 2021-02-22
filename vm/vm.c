@@ -325,7 +325,6 @@ bool supplemental_page_table_copy(struct supplemental_page_table *dst UNUSED,
                                   struct supplemental_page_table *src UNUSED)
 {
     //! ADD: supplemental_page_table_copy
-    // printf("스레드 이름 :: %s\n", thread_name());
     struct hash_iterator i;
     hash_first (&i, &src->pages);
     while (hash_next (&i))
@@ -335,31 +334,34 @@ bool supplemental_page_table_copy(struct supplemental_page_table *dst UNUSED,
         // memcpy(newpage, parent_page, PGSIZE);
         // printf("here??\n");
 
+        // printf("copy 스레드 이름 :: %s\n", thread_name());
         enum vm_type type = page_get_type(parent_page);
         void *upage = parent_page->va;
         bool writable = parent_page->writable;
         vm_initializer *init = parent_page->uninit.init;
-        void *aux = parent_page->uninit.aux;
+        void* aux = parent_page->uninit.aux;
 
-        bool success = false;
+        // struct box *box = (struct box*)malloc(sizeof(struct box));
+        // box->file = file;
+        // box->ofs = ofs;
+        // box->page_read_bytes = page_read_bytes;
 
-        if(vm_alloc_page_with_initializer(type, upage, writable, init, aux))
-        {
-            if(!vm_claim_page(upage))
-                return false;
-        }
-        else
+        // printf("부모 file 주소 :: %p\n", ((struct box*)aux)->file);
+
+        if(!vm_alloc_page_with_initializer(type, upage, writable, init, aux))
             return false;
     }
 
-    return true;
 
     // struct hash_iterator j;
     // hash_first (&j, &dst->pages);
     // while (hash_next (&j))
     // {
     //     struct page *page = hash_entry (hash_cur (&j), struct page, hash_elem);
+    //     // printf("copy page->va :: %p\n", page->va);
+    //     // printf("copy file :: %p\n", ((struct box*)(page->uninit.aux))->file);
     // }
+    return true;
 }
 
 /* Free the resource hold by the supplemental page table */

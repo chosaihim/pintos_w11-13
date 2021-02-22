@@ -201,15 +201,15 @@ __do_fork(void *aux)
 		if (parent->fd_table[fd])
 			current->fd_table[fd] = file_duplicate(parent->fd_table[fd]);
 		// printf("I'm child's file, %p\n", current->fd_table[fd]);
-		// printf("I'm %d, do__fork_ - duplicating end  \n", thread_current()->tid);
+		printf("I'm %d, do__fork_ - duplicating end  \n", thread_current()->tid);
 	}
 	current->next_fd = parent->next_fd;   /* WE NEED THIS !!! */
-	// printf("I'm %d, do__fork_2\n", thread_current()->tid);
+	printf("I'm %d, do__fork_2\n", thread_current()->tid);
 
 
     parent-> is_fork = 1; /* fork success ! */
 	sema_up(&parent->sema_fork); /* 중간에 터지면 깨어주질 못한다. */
-	// printf("I'm %d, do__fork_3\n", thread_current()->tid);
+	printf("I'm %d, do__fork_3\n", thread_current()->tid);
 
 	process_init();
 
@@ -217,13 +217,13 @@ __do_fork(void *aux)
 	if (succ)
 	{
 		if_.R.rax = 0;
-        // printf("I'm %d, do_iret \n",thread_tid());
+        printf("I'm %d, do_iret \n",thread_tid());
 		do_iret(&if_);
 	}
 
 error:
     parent->is_fork = 0;
-    // printf("I'm %d, do__fork_error\n", thread_current()->tid);
+    printf("I'm %d, do__fork_error\n", thread_current()->tid);
 	sema_up(&parent->sema_fork); /* 중간에 터지면 깨어주질 못한다. */
 	thread_exit();
 }
@@ -963,7 +963,14 @@ lazy_load_segment (struct page *page, void *aux) {
     // bool writable = ((struct box *)aux)->writable;
     // printf("read_byte :: %d\n", page_read_bytes);
     // printf("zero_byte :: %d\n", page_zero_bytes);
+	printf("================= in the lazy =================\n\n");
+	// printf("스레드 이름 :: %s \n", thread_name());
+	// printf("page 주소 :: %p\n", page);
+	// printf("page va 주소 :: %p\n", page->va);
     // printf("file :: %p\n", file);
+    printf("lazy load file ofs :: %d\n", ofs);
+    printf("lazy load read_bytes :: %d\n", page_read_bytes);
+    // printf("lazy load file ofs :: %d\n", ofs);
 	// file->deny_write = !writable;
 	// printf("is writable :: %d\n", writable);
 	// printf("file deny write :: %d\n", file->deny_write);
@@ -974,17 +981,15 @@ lazy_load_segment (struct page *page, void *aux) {
     //     return false;
 
     /* Load this page. */
-	// printf("page 주소 :: %p\n", page);
 	// printf("page 주소 :: %p\n", page->frame->page);
 	// printf("frame 주소 :: %p\n", page->frame);
-	printf("================= in the lazy =================\n\n");
 	file_seek (file, ofs);
 	// printf("%p\n", file);
-    // printf("lazy load file ofs :: %d\n", ofs);
     if (file_read (file, page->frame->kva, page_read_bytes) != (int) page_read_bytes) {
         palloc_free_page (page->frame->kva);
         return false;
     }
+	// printf("여기서 터지나요??\n");
     // printf("lazy load file file pos :: %d\n", file->pos);
     memset (page->frame->kva + page_read_bytes, 0, page_zero_bytes);
     // /* Add the page to the process's address space. */
@@ -997,7 +1002,7 @@ lazy_load_segment (struct page *page, void *aux) {
     // printf("here??\n");
     // printf("upage-va :: %p\n", page->va);
     // hex_dump(page->va, page->va, PGSIZE, true);
-    free(aux);
+    // free(aux);
     return true;
     //! END: insert of lazy_load_segment
 }
@@ -1039,7 +1044,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		// void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
 		// printf("load segment file pos :: %d\n", file->pos);
 		// printf("load segment offset :: %d\n", ofs);
-        struct box *box = malloc(sizeof(struct box));
+        struct box *box = (struct box*)malloc(sizeof(struct box));
 		// file_seek(file, ofs);
         box->file = file;
 		// box->file->pos = ofs;
