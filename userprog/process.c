@@ -369,7 +369,8 @@ process_cleanup (void) {
 	struct thread *curr = thread_current ();
 
 #ifdef VM
-	supplemental_page_table_kill (&curr->spt);
+	if(!hash_empty(&curr->spt.pages))
+		supplemental_page_table_kill (&curr->spt);
 #endif
 
 	uint64_t *pml4;
@@ -976,6 +977,7 @@ lazy_load_segment (struct page *page, void *aux) {
 	// printf("page 주소 :: %p\n", page);
 	// printf("page 주소 :: %p\n", page->frame->page);
 	// printf("frame 주소 :: %p\n", page->frame);
+	printf("================= in the lazy =================\n\n");
 	file_seek (file, ofs);
 	// printf("%p\n", file);
     // printf("lazy load file ofs :: %d\n", ofs);
@@ -994,7 +996,6 @@ lazy_load_segment (struct page *page, void *aux) {
     // }
     // printf("here??\n");
     // printf("upage-va :: %p\n", page->va);
-	// printf("================= in the lazy =================\n\n");
     // hex_dump(page->va, page->va, PGSIZE, true);
     free(aux);
     return true;
@@ -1049,12 +1050,12 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         // box->writable = writable;
         // printf("upage :: %p\n", upage);
 		// printf("load_seg writable :: %d\n", writable);
+		// printf("================ in the load seg ========== \n\n");
 		// printf("file %p\n",file);
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, box))
 			return false;
 		// free(box);
-		// printf("================ in the load seg ========== \n\n");
 		// hex_dump(page->va, page->va, PGSIZE, true);
 		/* Advance. */
 		read_bytes -= page_read_bytes;

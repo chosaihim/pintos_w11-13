@@ -273,6 +273,8 @@ bool vm_claim_page(void *va UNUSED)
     // page->va = palloc_get_page(PAL_ZERO | PAL_USER);
     //! END: vm_claim_page
     // printf("page 주소 :: %p\n", page);
+    if (page == NULL)
+        return false;
 
     return vm_do_claim_page(page);
 }
@@ -300,9 +302,9 @@ vm_do_claim_page(struct page *page)
     // printf("frame->kva :: %p\n", frame->kva);
     if(install_page(page->va, frame->kva, page->writable))
     {
+        // printf("여기서 터지나요??\n");
         return swap_in(page, frame->kva);
     }
-    // printf("여기서 터지나요??\n");
     return false;
     
 }
@@ -322,6 +324,42 @@ void supplemental_page_table_init(struct supplemental_page_table *spt UNUSED)
 bool supplemental_page_table_copy(struct supplemental_page_table *dst UNUSED,
                                   struct supplemental_page_table *src UNUSED)
 {
+    //! ADD: supplemental_page_table_copy
+    // printf("스레드 이름 :: %s\n", thread_name());
+    struct hash_iterator i;
+    hash_first (&i, &src->pages);
+    while (hash_next (&i))
+    {
+        struct page *parent_page = hash_entry (hash_cur (&i), struct page, hash_elem);
+        // struct page *newpage = (struct page*)malloc(sizeof(struct page));
+        // memcpy(newpage, parent_page, PGSIZE);
+        // printf("here??\n");
+
+        enum vm_type type = page_get_type(parent_page);
+        void *upage = parent_page->va;
+        bool writable = parent_page->writable;
+        vm_initializer *init = parent_page->uninit.init;
+        void *aux = parent_page->uninit.aux;
+
+        bool success = false;
+
+        if(vm_alloc_page_with_initializer(type, upage, writable, init, aux))
+        {
+            if(!vm_claim_page(upage))
+                return false;
+        }
+        else
+            return false;
+    }
+
+    return true;
+
+    // struct hash_iterator j;
+    // hash_first (&j, &dst->pages);
+    // while (hash_next (&j))
+    // {
+    //     struct page *page = hash_entry (hash_cur (&j), struct page, hash_elem);
+    // }
 }
 
 /* Free the resource hold by the supplemental page table */
