@@ -61,9 +61,9 @@ struct page
     
     /* Memory Mapped File 에서다룰예정*/
     struct list_elem mmap_elem;/* mmap리스트element */
-    // size_t offset;             /* 읽어야할파일오프셋*/
-    // size_t read_bytes;         /* 가상페이지에쓰여져있는데이터크기*/
-    // size_t zero_bytes;         /* 0으로채울남은페이지의바이트*/
+    size_t offset;             /* 읽어야할파일오프셋*/
+    size_t read_bytes;         /* 가상페이지에쓰여져있는데이터크기*/
+    size_t zero_bytes;         /* 0으로채울남은페이지의바이트*/
     
     /* Swapping 과제에서 다룰 예정*/
     size_t swap_slot;           /* 스왑슬롯*/

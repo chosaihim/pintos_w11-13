@@ -28,5 +28,8 @@ void seek(int fd, unsigned position);
 unsigned tell(int fd);
 void close(int fd);
 
+//! Project 3 VM
+void* mmap (void *addr, size_t length, int writable, int fd, off_t offset);
+void munmap (void *addr);
 
 #endif /* userprog/syscall.h */// 

@@ -65,6 +65,9 @@ syscall_handler (struct intr_frame *f UNUSED) {
     /* 우리는 상한선에서 출발해서 밑으로 쌓았다. */
     //! ADD: check_address 주석
     check_address(f->rsp);
+    #ifdef VM
+    thread_current()->rsp_stgr = f->rsp;
+    #endif
 
     uint64_t number = f->R.rax;
     switch(number){
@@ -118,6 +121,13 @@ syscall_handler (struct intr_frame *f UNUSED) {
             break;
         case SYS_CLOSE:
             close(f->R.rdi);
+            break;
+        //! for VM
+        case SYS_MMAP:
+            f->R.rax = mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8);
+            break;
+        case SYS_MUNMAP:
+            munmap(f->R.rdi);
             break;
     }
 	// thread_exit ();
@@ -247,12 +257,12 @@ int read(int fd, void *buffer, unsigned length){
     lock_acquire(&filesys_lock);
     struct file *target = process_get_file(fd);
     int ret = -1;
+    // printf("파일 주소 :: %p\n", target);
     if(target) /* fd == 0 이 었으면, 0을 return 했을 것이다.*/
     {   
         if (fd == 0)
         {   
             ret = input_getc();
-            // printf("파일 ret :: %d\n", ret);
         }
         else
         {
@@ -292,4 +302,35 @@ unsigned tell(int fd){
 }
 void close(int fd){
     process_close_file(fd);
+}
+
+
+//! for VM
+void* mmap (void *addr, size_t length, int writable, int fd, off_t offset)
+{
+    // printf("파일 fd :: %d\n", fd);
+    if (addr == NULL || length == 0 || spt_find_page(&thread_current()->spt, addr))
+        return NULL;
+    // if (spt_find_page(&thread_current()->spt, addr))
+    //     return NULL;
+
+
+    // lock_acquire(&filesys_lock);
+    struct file *target = process_get_file(fd);
+    return do_mmap(addr, length, writable, target, offset);
+    // lock_release(&filesys_lock);
+    // struct file *mfile = file_open(addr);
+
+    // if(target == mfile)
+    //     exit(-1);
+    // if(addr == target)
+    //     exit(-1);
+
+    // printf("파일 주소 :: %p\n", target);
+    
+}
+
+void munmap (void *addr)
+{
+    do_munmap(addr);
 }

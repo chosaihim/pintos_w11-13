@@ -50,9 +50,52 @@ file_backed_destroy (struct page *page) {
 void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
+	
+	ASSERT (length % PGSIZE == 0);
+	ASSERT (pg_ofs (addr) == 0);
+	ASSERT (offset % PGSIZE == 0);
+	// ASSERT (spt_find_page(&thread_current()->spt, addr));
+    struct file *mfile = file_reopen(file);
+
+    // printf("여기서 터지나요??\n");
+    // printf("addr :: %p\n", addr);
+    // printf("mfile 주소 :: %p\n", mfile);
+
+	size_t zero_length = PGSIZE - length;
+
+	while (length > 0 || zero_length > 0) {
+
+        if(vm_alloc_page(VM_FILE, pg_round_down(addr), writable))
+            vm_claim_page(addr);
+
+		size_t page_read_bytes = length < PGSIZE ? length : PGSIZE;
+		size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+		file_seek (mfile, offset);
+        // printf("offset :; %d\n", offset);
+        // printf("file pos :: %d\n", mfile->pos);
+		if (file_read (mfile, addr, page_read_bytes) != (int) page_read_bytes) {
+			// file_close(mfile);
+            return addr;
+			
+			// exit(-1);
+		}
+		memset (addr + page_read_bytes, 0, page_zero_bytes);
+		// printf("lazy load file file pos :: %d\n", file->pos);
+
+        length      -= page_read_bytes;
+        zero_length -= page_zero_bytes;
+        addr 		+= PGSIZE;
+        offset 		+= page_read_bytes;
+	}
+	return addr;
+	
 }
 
 /* Do the munmap */
 void
 do_munmap (void *addr) {
+
+    // struct page* page = spt_find_page(&thread_current()->spt, addr);
+    // destroy(page);
 }

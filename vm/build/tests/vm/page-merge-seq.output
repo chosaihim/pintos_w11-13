@@ -42,12 +42,12 @@ child-sort: exit(123)
 (page-merge-seq) child[5] wait success
 (page-merge-seq) sort chunk 6
 Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
-Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421fc4a 0x800421fbe8 0x800421fdfd 0x800421a3db 0x80042077b2.
+Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421fe7a 0x800421fe18 0x800422002d 0x800421a3db 0x80042077b2.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 277 ticks
-Thread: 30 idle ticks, 43 kernel ticks, 204 user ticks
+Timer: 271 ticks
+Thread: 30 idle ticks, 41 kernel ticks, 200 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 1927 reads, 2246 writes
 hd1:0: 216 reads, 0 writes

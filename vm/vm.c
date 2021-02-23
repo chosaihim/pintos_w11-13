@@ -215,6 +215,12 @@ vm_get_frame(void)
 static void
 vm_stack_growth(void *addr UNUSED)
 {
+    if(vm_alloc_page(VM_ANON | VM_MARKER_0, pg_round_down(addr), 1))
+    {
+        // printf("round down 주소 :: %p\n", pg_round_down(addr));
+        vm_claim_page(addr);
+    }
+
 }
 
 /* Handle the fault on write_protected page */
@@ -234,7 +240,6 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
     /* TODO: Your code goes here */
     //! ADD: modify vm_try_handle_fault
 
-    // printf("page addr :: %p\n", addr);
     // struct page* page = spt_find_page(spt, addr);
     // printf("addr :: %p\n", addr);
     // printf("page->va 주소 :: %p\n", page->va);
@@ -244,11 +249,30 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
         return false;
     }
 
+    // if(addr < f->rsp - 8)
+    //     return false;
+
+
     if (not_present){
+        // printf("page addr :: %p\n", addr);
+        // printf("rsp addr :: %p\n", f->rsp);
 
         // printf("ee\n");
         // printf("here?? 22\n");
-        return vm_claim_page(addr);
+        if(!vm_claim_page(addr))
+        {
+            void *rsp_stgr = is_kernel_vaddr(f->rsp) ? thread_current()->rsp_stgr : f->rsp;
+            if(addr >= rsp_stgr - 8 && USER_STACK - 0x100000 <= addr && addr <= USER_STACK)
+            {
+                vm_stack_growth(addr);
+                return true;
+            }
+            else
+                return false;
+
+        }
+        else
+            return true;
     }
     
     return false;

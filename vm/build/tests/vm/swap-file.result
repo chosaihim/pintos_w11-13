@@ -1,0 +1,12 @@
+FAIL
+Kernel panic in run: PANIC at ../../vm/file.c:54 in do_mmap(): assertion `length % PGSIZE == 0' failed.
+Call stack: 0x8004216b4b 0x800422056d 0x800421c5c3 0x800421c0b0 0x800421bcd3 0x400197 0x400d85 0x400dce
+Translation of call stack:
+0x0000008004216b4b: debug_panic (lib/kernel/debug.c:32)
+0x000000800422056d: do_mmap (vm/file.c:55)
+0x000000800421c5c3: mmap (userprog/syscall.c:331)
+0x000000800421c0b0: syscall_handler (userprog/syscall.c:127)
+0x000000800421bcd3: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400197: (unknown)
+0x0000000000400d85: (unknown)
+0x0000000000400dce: (unknown)

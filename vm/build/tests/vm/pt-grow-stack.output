@@ -14,15 +14,17 @@ Boot complete.
 Putting 'pt-grow-stack' into the file system...
 Executing 'pt-grow-stack':
 (pt-grow-stack) begin
-pt-grow-stack: exit(-1)
+(pt-grow-stack) cksum: 3424492700
+(pt-grow-stack) end
+pt-grow-stack: exit(0)
 Execution of 'pt-grow-stack' complete.
 Timer: 59 ticks
-Thread: 30 idle ticks, 28 kernel ticks, 1 user ticks
+Thread: 30 idle ticks, 27 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 85 reads, 254 writes
+hd0:1: 93 reads, 254 writes
 hd1:0: 113 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 960 characters output
+Console: 1013 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

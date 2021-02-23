@@ -1,0 +1,12 @@
+FAIL
+Kernel panic in run: PANIC at ../../vm/file.c:55 in do_mmap(): assertion `pg_ofs (addr) == 0' failed.
+Call stack: 0x8004216b4b 0x80042205ba 0x800421c5c3 0x800421c0b0 0x800421bcd3 0x400186 0x400c5c 0x400ca5
+Translation of call stack:
+0x0000008004216b4b: debug_panic (lib/kernel/debug.c:32)
+0x00000080042205ba: do_mmap (vm/file.c:56)
+0x000000800421c5c3: mmap (userprog/syscall.c:331)
+0x000000800421c0b0: syscall_handler (userprog/syscall.c:127)
+0x000000800421bcd3: no_sti (userprog/syscall-entry.o:?)
+0x0000000000400186: (unknown)
+0x0000000000400c5c: (unknown)
+0x0000000000400ca5: (unknown)

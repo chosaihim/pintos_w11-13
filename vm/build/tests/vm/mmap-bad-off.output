@@ -1,0 +1,32 @@
+Kernel command line: -q -f put mmap-bad-off put large.txt run mmap-bad-off
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  156,262,400 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 4,017 sector (1 MB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
+Formatting file system...done.
+Boot complete.
+Putting 'mmap-bad-off' into the file system...
+Putting 'large.txt' into the file system...
+Executing 'mmap-bad-off':
+(mmap-bad-off) begin
+(mmap-bad-off) open "large.txt"
+(mmap-bad-off) try to mmap invalid offset
+Kernel PANIC at ../../vm/file.c:56 in do_mmap(): assertion `offset % PGSIZE == 0' failed.
+Call stack: 0x8004216b4b 0x8004220605 0x800421c5c3 0x800421c0b0 0x800421bcd3 0x400186 0x400c5c 0x400ca5.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 159 ticks
+Thread: 30 idle ticks, 127 kernel ticks, 2 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 111 reads, 8072 writes
+hd1:0: 4017 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1379 characters output
+Key
