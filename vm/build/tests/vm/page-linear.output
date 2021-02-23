@@ -1,0 +1,30 @@
+Kernel command line: -q -f put page-linear run page-linear
+0 ~ 9fc00 1
+100000 ~ 13e0000 1
+Pintos booting with: 
+	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
+	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
+Calibrating timer...  157,081,600 loops/s.
+hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
+hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
+hd1:0: detected 108 sector (54 kB) disk, model "QEMU HARDDISK", serial "QM00003"
+hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
+Formatting file system...done.
+Boot complete.
+Putting 'page-linear' into the file system...
+Executing 'page-linear':
+(page-linear) begin
+(page-linear) initialize
+Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
+Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421fc4a 0x800421fbe8 0x800421fb3f 0x800421bc49 0x8004208fdc 0x8004209547 0x40012e 0x400fc9 0x401012.
+The `backtrace' program can make call stacks useful.
+Read "Backtraces" in the "Debugging Tools" chapter
+of the Pintos documentation for more information.
+Timer: 148 ticks
+Thread: 30 idle ticks, 28 kernel ticks, 90 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 81 reads, 244 writes
+hd1:0: 108 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1328 characters output
+Key

@@ -73,11 +73,12 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         //  = palloc_get_page(PAL_USER | PAL_ZERO);
         // if (upage == NULL)
         //     goto err;
+        // printf("스레드 이름 :: %s\n", thread_name());
 
         typedef bool (*initializerFunc)(struct page *, enum vm_type, void *);
         initializerFunc initializer = NULL;
 
-        switch(type){
+        switch(VM_TYPE(type)){
             case VM_ANON:
                 initializer = anon_initializer;
                 // uninit_new(page, upage, init, type, aux, anon_initializer);
@@ -102,14 +103,14 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         // page->read_bytes = box->page_read_bytes;
         // page->zero_bytes = PGSIZE - box->page_read_bytes;
         page->writable = writable;
-        // printf("page의 va :: %p\n", page->va);
+        // printf("page의 va :: %p\n", page->frame);
         // hex_dump(page->va, page->va, PGSIZE, true);
 
         /* TODO: Insert the page into the spt. */
+        // printf("AFTER if PPPPPPPPPPP22222222222222\n");
         return spt_insert_page(spt, page);
         //! END: uninit_new
     }
-    // printf("AFTER if PPPPPPPPPPP22222222222222\n");
 err:
     // printf("FALSESEP22222222222222\n");
     return false;
@@ -148,8 +149,10 @@ bool spt_insert_page(struct supplemental_page_table *spt UNUSED,
     int succ = false;
     /* TODO: Fill this function. */
     //! ADD: vm_insert
+    // printf("=== in the spt_insert === \n");
     if(hash_insert(&spt->pages, &page->hash_elem) == NULL)
     {
+        // printf("=== in the spt_insert 222 === \n");
         succ = true;
     }
     //! END: vm_insert
@@ -273,6 +276,7 @@ bool vm_claim_page(void *va UNUSED)
     // page->va = palloc_get_page(PAL_ZERO | PAL_USER);
     //! END: vm_claim_page
     // printf("page 주소 :: %p\n", page);
+    // printf("==== in vm_claim_page ==== %s\n", thread_name());
     if (page == NULL)
         return false;
 
@@ -299,10 +303,10 @@ vm_do_claim_page(struct page *page)
     // printf("page->frame :: %p\n", page->frame);
     // printf("frame->page :: %p\n", frame->page);
     // printf("page->va :: %p\n", page->va);
-    // printf("frame->kva :: %p\n", frame->kva);
     if(install_page(page->va, frame->kva, page->writable))
     {
-        // printf("여기서 터지나요??\n");
+        // printf("==== in vm_do_claim_page ====\n");
+        // printf("frame->kva :: %p\n", frame->kva);
         return swap_in(page, frame->kva);
     }
     return false;
@@ -325,31 +329,57 @@ bool supplemental_page_table_copy(struct supplemental_page_table *dst UNUSED,
                                   struct supplemental_page_table *src UNUSED)
 {
     //! ADD: supplemental_page_table_copy
+    // bool success;
     struct hash_iterator i;
     hash_first (&i, &src->pages);
     while (hash_next (&i))
     {
+        // struct page *parent_page = (struct page*)malloc(sizeof(struct page));
         struct page *parent_page = hash_entry (hash_cur (&i), struct page, hash_elem);
         // struct page *newpage = (struct page*)malloc(sizeof(struct page));
         // memcpy(newpage, parent_page, PGSIZE);
         // printf("here??\n");
 
         // printf("copy 스레드 이름 :: %s\n", thread_name());
+        // enum vm_type type = parent_page->operations->type;
         enum vm_type type = page_get_type(parent_page);
         void *upage = parent_page->va;
         bool writable = parent_page->writable;
         vm_initializer *init = parent_page->uninit.init;
         void* aux = parent_page->uninit.aux;
 
-        // struct box *box = (struct box*)malloc(sizeof(struct box));
-        // box->file = file;
-        // box->ofs = ofs;
-        // box->page_read_bytes = page_read_bytes;
+        if (parent_page->uninit.type & VM_MARKER_0)
+        {
+            setup_stack(&thread_current()->tf);
+        }
 
-        // printf("부모 file 주소 :: %p\n", ((struct box*)aux)->file);
+        else
+        {
+            if(parent_page->operations->type == VM_UNINIT)  //! UNIT page이면 lazy load
+            {
+                if(!vm_alloc_page_with_initializer(type, upage, writable, init, aux))
+                    return false;
+            }
 
-        if(!vm_alloc_page_with_initializer(type, upage, writable, init, aux))
-            return false;
+            else
+            {   //! UNIT이 아니면 spt 추가만
+                if(!vm_alloc_page(type, upage, writable))
+                    return false;
+                if(!vm_claim_page(upage))
+                    return false;
+            }
+
+        }
+
+        if (parent_page->operations->type != VM_UNINIT)
+        {   //! UNIT이 아닌 모든 페이지(stack 포함)는 부모의 것을 memcpy
+            struct page* child_page = spt_find_page(dst, upage);
+
+            memcpy(child_page->frame->kva, parent_page->frame->kva, PGSIZE);
+            // printf("memcpy \n");
+        }
+
+
     }
 
 
@@ -358,7 +388,7 @@ bool supplemental_page_table_copy(struct supplemental_page_table *dst UNUSED,
     // while (hash_next (&j))
     // {
     //     struct page *page = hash_entry (hash_cur (&j), struct page, hash_elem);
-    //     // printf("copy page->va :: %p\n", page->va);
+    //     printf("copy page->va :: %p\n", page->va);
     //     // printf("copy file :: %p\n", ((struct box*)(page->uninit.aux))->file);
     // }
     return true;

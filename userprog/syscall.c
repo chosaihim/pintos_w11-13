@@ -178,7 +178,7 @@ void exit(int status) {
     struct thread *curr = thread_current();
     curr->exit_status = status;
     curr->is_exit = 1; // be dead by exit syscall!
-    // hex_dump(USER_STACK-PGSIZE, (void *)(USER_STACK-PGSIZE), PGSIZE, 1);
+    // hex_dump(USER_STACK, USER_STACK, PGSIZE, 1);
     // printf("여기 들어옴??\n");
     printf("%s: exit(%d)\n", thread_current()->name, thread_current()->exit_status);
     thread_exit();
@@ -252,6 +252,7 @@ int read(int fd, void *buffer, unsigned length){
         if (fd == 0)
         {   
             ret = input_getc();
+            // printf("파일 ret :: %d\n", ret);
         }
         else
         {

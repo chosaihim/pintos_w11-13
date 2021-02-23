@@ -201,15 +201,15 @@ __do_fork(void *aux)
 		if (parent->fd_table[fd])
 			current->fd_table[fd] = file_duplicate(parent->fd_table[fd]);
 		// printf("I'm child's file, %p\n", current->fd_table[fd]);
-		printf("I'm %d, do__fork_ - duplicating end  \n", thread_current()->tid);
+		// printf("I'm %d, do__fork_ - duplicating end  \n", thread_current()->tid);
 	}
 	current->next_fd = parent->next_fd;   /* WE NEED THIS !!! */
-	printf("I'm %d, do__fork_2\n", thread_current()->tid);
+	// printf("I'm %d, do__fork_2\n", thread_current()->tid);
 
 
     parent-> is_fork = 1; /* fork success ! */
 	sema_up(&parent->sema_fork); /* 중간에 터지면 깨어주질 못한다. */
-	printf("I'm %d, do__fork_3\n", thread_current()->tid);
+	// printf("I'm %d, do__fork_3\n", thread_current()->tid);
 
 	process_init();
 
@@ -217,13 +217,13 @@ __do_fork(void *aux)
 	if (succ)
 	{
 		if_.R.rax = 0;
-        printf("I'm %d, do_iret \n",thread_tid());
+        // printf("I'm %d, do_iret \n",thread_tid());
 		do_iret(&if_);
 	}
 
 error:
     parent->is_fork = 0;
-    printf("I'm %d, do__fork_error\n", thread_current()->tid);
+    // printf("I'm %d, do__fork_error\n", thread_current()->tid);
 	sema_up(&parent->sema_fork); /* 중간에 터지면 깨어주질 못한다. */
 	thread_exit();
 }
@@ -263,6 +263,10 @@ process_exec (void *f_name) {
 
 	/* We first kill the current context */
 	process_cleanup ();
+	
+	#ifdef VM
+	supplemental_page_table_init(&thread_current()->spt);
+	#endif
 
 	/* And then load the binary, including set up stack! */
 	thread_current()->is_load = success = load (argv[0], &_if);
@@ -633,7 +637,8 @@ struct ELF64_PHDR {
 #define ELF ELF64_hdr
 #define Phdr ELF64_PHDR
 
-static bool setup_stack (struct intr_frame *if_);
+//! static -> 전역으로 변환했음 (께림칙)
+bool setup_stack (struct intr_frame *if_);
 static bool validate_segment (const struct Phdr *, struct file *);
 static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		uint32_t read_bytes, uint32_t zero_bytes,
@@ -879,7 +884,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 }
 
 /* Create a minimal stack by mapping a zeroed page at the USER_STACK */
-static bool
+bool
 setup_stack (struct intr_frame *if_) {
 	uint8_t *kpage;
 	bool success = false;
@@ -963,13 +968,13 @@ lazy_load_segment (struct page *page, void *aux) {
     // bool writable = ((struct box *)aux)->writable;
     // printf("read_byte :: %d\n", page_read_bytes);
     // printf("zero_byte :: %d\n", page_zero_bytes);
-	printf("================= in the lazy =================\n\n");
+	// printf("================= in the lazy =================\n\n");
 	// printf("스레드 이름 :: %s \n", thread_name());
 	// printf("page 주소 :: %p\n", page);
 	// printf("page va 주소 :: %p\n", page->va);
     // printf("file :: %p\n", file);
-    printf("lazy load file ofs :: %d\n", ofs);
-    printf("lazy load read_bytes :: %d\n", page_read_bytes);
+    // printf("lazy load file ofs :: %d\n", ofs);
+    // printf("lazy load read_bytes :: %d\n", page_read_bytes);
     // printf("lazy load file ofs :: %d\n", ofs);
 	// file->deny_write = !writable;
 	// printf("is writable :: %d\n", writable);
@@ -1073,7 +1078,7 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 }
 
 /* Create a PAGE of stack at the USER_STACK. Return true on success. */
-static bool
+bool	//! spt copy에서 쓰려고 전역으로 변환
 setup_stack (struct intr_frame *if_) {
 	bool success = false;
 	void *stack_bottom = (void *) (((uint8_t *) USER_STACK) - PGSIZE);
@@ -1083,25 +1088,71 @@ setup_stack (struct intr_frame *if_) {
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
     //! ADD: setup_stack
-    uint8_t *kpage;
-	// printf("stack_bottom addr :: %p\n", stack_bottom);
-	// printf("USER_STACK addr :: %p\n", USER_STACK);
-	kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-	if (kpage != NULL) {
-		success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
-		// success = vm_alloc_page(VM_MARKER_0, kpage, true);
-        // success = vm_claim_page(stack_bottom);
+    // struct page* page = spt_find_page(&thread_current()->spt, stack_bottom);
+    // struct page* page = (struct page*)malloc(sizeof(struct page));
+    // printf("MARKER 0 :: %d\n", VM_MARKER_0);
+    // printf("MARKER_0 :: %d\n", VM_TYPE(VM_MARKER_0));
+    // printf("MARKER_1 :: %d\n", VM_TYPE(VM_MARKER_1));
+    // supplemental_page_table_init(&thread_current()->spt);
+    // printf("========= in setup stack =============\n");
+	//! stack 영역인 page임을 MARK
+    if (vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, 1))
+    {
+        // struct page* stack = spt_find_page(&thread_current()->spt, stack_bottom);
+        // printf("스택 주소 :: %p\n", stack);
+        // printf("스택 주소 va :: %p\n", stack->va);
+
+        // struct frame *frame = palloc_get_page(PAL_USER | PAL_ZERO);
+    	// frame->kva = palloc_get_page (PAL_USER | PAL_ZERO);
+        // uint8_t *kpage;
+        // kpage = palloc_get_page(PAL_USER | PAL_ZERO);
+
+		success = vm_claim_page(stack_bottom);
+
+	    // if (frame != NULL) {
+        //     /* Set links */
+        //     frame->page = stack;
+        //     stack->frame = frame;
+		//     success = install_page (stack->va, frame->kva, stack->writable);
+		
 		if (success){
-            // printf("here??\n");
+			// printf("here??\n");
 			if_->rsp = USER_STACK;
-        }
-        else
-            palloc_free_page(kpage);
-	}
+		}
+		// else
+		// {
+		// 	palloc_free_page(frame->kva);
+		// 	palloc_free_page(frame);
+		// 	// palloc_free_page(kpage);
+		// }
+	    // }
+    }
+    // printf("페이지 주소 :: %p\n", page);
+
+    // uint8_t *kpage;
+	// // printf("stack_bottom addr :: %p\n", stack_bottom);
+	// // printf("USER_STACK addr :: %p\n", USER_STACK);
+	// kpage = palloc_get_page (PAL_USER | PAL_ZERO);
+	// if (kpage != NULL) {
+	// 	success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
+	// 	// success = vm_alloc_page(VM_ANON, kpage, true);
+    //     // success = vm_claim_page(stack_bottom);
+	// 	if (success){
+    //         // printf("here??\n");
+	// 		if_->rsp = USER_STACK;
+    //     }
+    //     else
+    //         palloc_free_page(kpage);
+	// }
 
     /* vm_entry생성*/
     /* vm_entry멤버들설정*/
     /* insert_vme() 함수로해시테이블에추가*/
+    // struct thread* curr = thread_current();
+    // curr->spt.
+    // success = spt_insert_page(&curr->spt, stack_bottom);
+    
+    // printf("현재 스레드 spt :: %p\n", curr->spt.pages);
 
     //! END: setup_stack
 

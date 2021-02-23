@@ -21,6 +21,7 @@ bool check_excutable(struct file *file);
 void free_children(void);
 //! ADD: VM
 bool install_page (void *upage, void *kpage, bool writable);
+bool setup_stack (struct intr_frame *if_);
 //! ADD: aux 구조체
 struct box {
     struct file *file;
