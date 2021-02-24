@@ -4,7 +4,7 @@ Kernel command line: -q -f put swap-anon run swap-anon
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x9e0000 (Usable: 9,088 kB)
-Calibrating timer...  124,313,600 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 104 sector (52 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -17,12 +17,12 @@ Executing 'swap-anon':
 (swap-anon) write sparsely over page 0
 (swap-anon) write sparsely over page 512
 Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
-Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421fe7a 0x800421fe18 0x800421fcde 0x800421bc49 0x8004208fdc 0x8004209547 0x400cac 0x400cf5.
+Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421ff47 0x800421fee5 0x800421fdab 0x800421bc49 0x8004208fdc 0x8004209547 0x400cac 0x400cf5.
 The `backtrace' program can make call stacks useful.
 Read "Backtraces" in the "Debugging Tools" chapter
 of the Pintos documentation for more information.
-Timer: 105 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 44 user ticks
+Timer: 106 ticks
+Thread: 30 idle ticks, 28 kernel ticks, 48 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 80 reads, 236 writes
 hd1:0: 104 reads, 0 writes

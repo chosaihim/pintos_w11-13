@@ -936,38 +936,22 @@ install_page (void *upage, void *kpage, bool writable) {
 			&& pml4_set_page (t->pml4, upage, kpage, writable));
 }
 
-// //! ADD: aux 구조체
-// struct box {
-//     struct file *file;
-//     size_t ofs;
-//     size_t page_read_bytes;
-//     size_t page_zero_bytes;
-//     bool writable;
-// };
 
-static bool
+//! ADD : static 해제
+bool
 lazy_load_segment (struct page *page, void *aux) {
 	/* TODO: Load the segment from the file */
 	/* TODO: This called when the first page fault occurs on address VA. */
 	/* TODO: VA is available when calling this function. */
     //! ADD: lazy_load_segment
     //! 이게 맞나?; aux[0]을 *file로 casting하고 싶어서, 참조 가능한 이중 void 포인터로((void **)aux) 먼저 캐스팅
-    // printf("lazy load init !!\n");
 	// TODO : page 구조체 member로 넣어놓은 것들 불러오기
-    // struct file *file = page->vafile;
-	// void* upage = page->vaddr;
-    // size_t page_read_bytes = page->read_bytes;
-    // size_t page_zero_bytes = page->zero_bytes;
-    // bool writable = page->writable;
 
     struct file *file = ((struct box *)aux)->file;
 	off_t ofs = ((struct box*)aux)->ofs;
-    // uint8_t *upage = ((struct box *)aux)->upage;
     size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
     size_t page_zero_bytes = PGSIZE - page_read_bytes;
-    // bool writable = ((struct box *)aux)->writable;
-    // printf("read_byte :: %d\n", page_read_bytes);
-    // printf("zero_byte :: %d\n", page_zero_bytes);
+
 	// printf("================= in the lazy =================\n\n");
 	// printf("스레드 이름 :: %s \n", thread_name());
 	// printf("page 주소 :: %p\n", page);
@@ -975,21 +959,14 @@ lazy_load_segment (struct page *page, void *aux) {
     // printf("file :: %p\n", file);
     // printf("lazy load file ofs :: %d\n", ofs);
     // printf("lazy load read_bytes :: %d\n", page_read_bytes);
-    // printf("lazy load file ofs :: %d\n", ofs);
-	// file->deny_write = !writable;
-	// printf("is writable :: %d\n", writable);
-	// printf("file deny write :: %d\n", file->deny_write);
 
     /* Get a page of memory. */
-    // uint8_t *kpage = palloc_get_page (PAL_USER);
-    // if (kpage == NULL)
-    //     return false;
 
     /* Load this page. */
 	// printf("page 주소 :: %p\n", page->frame->page);
 	// printf("frame 주소 :: %p\n", page->frame);
 	file_seek (file, ofs);
-	// printf("%p\n", file);
+
     if (file_read (file, page->frame->kva, page_read_bytes) != (int) page_read_bytes) {
         palloc_free_page (page->frame->kva);
         return false;
@@ -998,12 +975,7 @@ lazy_load_segment (struct page *page, void *aux) {
     // printf("lazy load file file pos :: %d\n", file->pos);
     memset (page->frame->kva + page_read_bytes, 0, page_zero_bytes);
     // /* Add the page to the process's address space. */
-	// vm_claim_page(page->va);
-    // if (!install_page (upage, kpage, writable)) {
-    //     printf("fail\n");
-    //     palloc_free_page (kpage);
-    //     return false;
-    // }
+
     // printf("here??\n");
     // printf("upage-va :: %p\n", page->va);
     // hex_dump(page->va, page->va, PGSIZE, true);
@@ -1033,7 +1005,6 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 	ASSERT (pg_ofs (upage) == 0);
 	ASSERT (ofs % PGSIZE == 0);
 
-    // file_seek(file, ofs);
 	while (read_bytes > 0 || zero_bytes > 0) {
 		/* Do calculate how to fill this page.
 		 * We will read PAGE_READ_BYTES bytes from FILE
@@ -1044,20 +1015,14 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
         // printf("zero_byte :: %d\n", page_zero_bytes);
 
 		/* TODO: Set up aux to pass information to the lazy_load_segment. */
-        // void *aux = NULL;
         //! ADD: aux modified
-		// void *aux[5] = {file, upage, &page_read_bytes, &page_zero_bytes, &writable};
 		// printf("load segment file pos :: %d\n", file->pos);
 		// printf("load segment offset :: %d\n", ofs);
         struct box *box = (struct box*)malloc(sizeof(struct box));
-		// file_seek(file, ofs);
+
         box->file = file;
-		// box->file->pos = ofs;
-		// box->file->deny_write = !(writable);
-		// box->upage = upage;
         box->ofs = ofs;
         box->page_read_bytes = page_read_bytes;
-        // box->writable = writable;
         // printf("upage :: %p\n", upage);
 		// printf("load_seg writable :: %d\n", writable);
 		// printf("================ in the load seg ========== \n\n");
@@ -1071,9 +1036,9 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		read_bytes -= page_read_bytes;
 		zero_bytes -= page_zero_bytes;
 		upage += PGSIZE;
+        //! ADD : ofs 이동시켜야 함
 		ofs += page_read_bytes;
 	}
-	// printf("스레드 이름 5 : %s\n", thread_name());
 	return true;
 }
 
@@ -1088,12 +1053,6 @@ setup_stack (struct intr_frame *if_) {
 	 * TODO: You should mark the page is stack. */
 	/* TODO: Your code goes here */
     //! ADD: setup_stack
-    // struct page* page = spt_find_page(&thread_current()->spt, stack_bottom);
-    // struct page* page = (struct page*)malloc(sizeof(struct page));
-    // printf("MARKER 0 :: %d\n", VM_MARKER_0);
-    // printf("MARKER_0 :: %d\n", VM_TYPE(VM_MARKER_0));
-    // printf("MARKER_1 :: %d\n", VM_TYPE(VM_MARKER_1));
-    // supplemental_page_table_init(&thread_current()->spt);
     // printf("========= in setup stack =============\n");
 	//! stack 영역인 page임을 MARK
     if (vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, 1))
@@ -1127,31 +1086,7 @@ setup_stack (struct intr_frame *if_) {
 		// }
 	    // }
     }
-    // printf("페이지 주소 :: %p\n", page);
-
-    // uint8_t *kpage;
-	// // printf("stack_bottom addr :: %p\n", stack_bottom);
-	// // printf("USER_STACK addr :: %p\n", USER_STACK);
-	// kpage = palloc_get_page (PAL_USER | PAL_ZERO);
-	// if (kpage != NULL) {
-	// 	success = install_page (((uint8_t *) USER_STACK) - PGSIZE, kpage, true);
-	// 	// success = vm_alloc_page(VM_ANON, kpage, true);
-    //     // success = vm_claim_page(stack_bottom);
-	// 	if (success){
-    //         // printf("here??\n");
-	// 		if_->rsp = USER_STACK;
-    //     }
-    //     else
-    //         palloc_free_page(kpage);
-	// }
-
-    /* vm_entry생성*/
-    /* vm_entry멤버들설정*/
-    /* insert_vme() 함수로해시테이블에추가*/
-    // struct thread* curr = thread_current();
-    // curr->spt.
-    // success = spt_insert_page(&curr->spt, stack_bottom);
-    
+    // printf("페이지 주소 :: %p\n", page);    
     // printf("현재 스레드 spt :: %p\n", curr->spt.pages);
 
     //! END: setup_stack

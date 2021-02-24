@@ -8,6 +8,7 @@
 #include "vm/anon.h"
 #include "vm/file.h"
 #include "userprog/process.h"
+#include "lib/kernel/hash.h"
 //! END
 
 /* Initializes the virtual memory subsystem by invoking each subsystem's
@@ -62,7 +63,6 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
     /* Check wheter the upage is already occupied or not. */
     if (spt_find_page(spt, upage) == NULL)
     {
-        // printf("upage addr :: %p\n", upage);
         // printf("PPPPPPPPPPPPPPPPP\n");
         /* TODO: Create the page, fetch the initialier according to the VM type,
 		 * TODO: and then create "uninit" page struct by calling uninit_new. You
@@ -81,38 +81,26 @@ bool vm_alloc_page_with_initializer(enum vm_type type, void *upage, bool writabl
         switch(VM_TYPE(type)){
             case VM_ANON:
                 initializer = anon_initializer;
-                // uninit_new(page, upage, init, type, aux, anon_initializer);
                 break;
             case VM_FILE:
                 initializer = file_backed_initializer;
-                // uninit_new(page, upage, init, type, aux, file_backed_initializer);
                 break;
         }
         
         // printf("PPPPPPPPPPP22222222222222\n");
-        // bool succ = uninit_initialize(upage, NULL);
         uninit_new(page, upage, init, type, aux, initializer);
 
         //! page member 초기화
-        // struct box* box = (struct box *)aux;
-
-        // page->type = type;
-        // page->vafile = box->file;
-        // page->va = upage;
-        // page->offset = box->ofs;
-        // page->read_bytes = box->page_read_bytes;
-        // page->zero_bytes = PGSIZE - box->page_read_bytes;
         page->writable = writable;
         // printf("page의 va :: %p\n", page->frame);
         // hex_dump(page->va, page->va, PGSIZE, true);
 
         /* TODO: Insert the page into the spt. */
-        // printf("AFTER if PPPPPPPPPPP22222222222222\n");
+        // printf("AFTER if PPPPPPPPPPP22222222222222 %d\n", pml4_is_dirty(&thread_current()->pml4, page->va));
         return spt_insert_page(spt, page);
         //! END: uninit_new
     }
 err:
-    // printf("FALSESEP22222222222222\n");
     return false;
 }
 
@@ -132,9 +120,7 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
     // printf("page.va :: %p\n", page->va);
     // printf("AFTER pg_round_down \n");
     // printf("spt->pages :: %p\n", &spt->pages);
-    // printf("page->hash_elem :: %p\n", &page.hash_elem);
     e = hash_find(&spt->pages, &page->hash_elem);
-    // printf("e :: %p", e);
     // printf("AFTER hash find \n");
     //! malloc을 해야 스레드 이름이 안없어진다...;
     free(page);
@@ -249,12 +235,8 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
         return false;
     }
 
-    // if(addr < f->rsp - 8)
-    //     return false;
-
-
+    // printf("page addr :: %p\n", addr);
     if (not_present){
-        // printf("page addr :: %p\n", addr);
         // printf("rsp addr :: %p\n", f->rsp);
 
         // printf("ee\n");
@@ -319,11 +301,8 @@ vm_do_claim_page(struct page *page)
     page->frame = frame;
 
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
-    // struct thread *curr = thread_current();
     //! ADD: insert pml4_set_page
     // TODO : mapping va to pa in the page table
-    // printf("frame :: %p\n", frame);
-    // printf("page :: %p\n", page);
     // printf("page->frame :: %p\n", page->frame);
     // printf("frame->page :: %p\n", frame->page);
     // printf("page->va :: %p\n", page->va);
@@ -360,9 +339,6 @@ bool supplemental_page_table_copy(struct supplemental_page_table *dst UNUSED,
     {
         // struct page *parent_page = (struct page*)malloc(sizeof(struct page));
         struct page *parent_page = hash_entry (hash_cur (&i), struct page, hash_elem);
-        // struct page *newpage = (struct page*)malloc(sizeof(struct page));
-        // memcpy(newpage, parent_page, PGSIZE);
-        // printf("here??\n");
 
         // printf("copy 스레드 이름 :: %s\n", thread_name());
         // enum vm_type type = parent_page->operations->type;
@@ -406,15 +382,6 @@ bool supplemental_page_table_copy(struct supplemental_page_table *dst UNUSED,
 
     }
 
-
-    // struct hash_iterator j;
-    // hash_first (&j, &dst->pages);
-    // while (hash_next (&j))
-    // {
-    //     struct page *page = hash_entry (hash_cur (&j), struct page, hash_elem);
-    //     printf("copy page->va :: %p\n", page->va);
-    //     // printf("copy file :: %p\n", ((struct box*)(page->uninit.aux))->file);
-    // }
     return true;
 }
 
@@ -423,8 +390,9 @@ void supplemental_page_table_kill(struct supplemental_page_table *spt UNUSED)
 {
     /* TODO: Destroy all the supplemental_page_table hold by thread and
 	 * TODO: writeback all the modified contents to the storage. */
-    //! ADD: hash_destroy = vm_destroy
-    // hash_clear (&spt->pages, spt_destructor);
+    // //! ADD: hash_destroy = vm_destroy
+    // printf("is here??\n");
+    // hash_destroy (&spt->pages, spt_destructor);
 
     struct hash_iterator i;
 
@@ -432,7 +400,15 @@ void supplemental_page_table_kill(struct supplemental_page_table *spt UNUSED)
     while (hash_next (&i))
     {
         struct page *page = hash_entry (hash_cur (&i), struct page, hash_elem);
+        // printf("page type :: %d\n", page->operations->type);
+        if (page->operations->type == VM_FILE)
+            do_munmap(page->va);
+        // vm_dealloc_page(page);
+        // printf("1\n");
+
         destroy(page);
+        		// printf("2\n");
+
     }
 }
 
@@ -475,5 +451,7 @@ bool delete_page(struct hash *pages, struct page *p)
 void spt_destructor(struct hash_elem *e, void* aux)
 {
     const struct page *p = hash_entry(e, struct page, hash_elem);
+    // printf("spt_dest \n");
+    // do_munmap(p->va);
     vm_dealloc_page(p);
 }

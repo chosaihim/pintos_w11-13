@@ -17,16 +17,16 @@ Executing 'mmap-misalign':
 (mmap-misalign) begin
 (mmap-misalign) open "sample.txt"
 (mmap-misalign) try to mmap at misaligned address
-Kernel PANIC at ../../vm/file.c:55 in do_mmap(): assertion `pg_ofs (addr) == 0' failed.
-Call stack: 0x8004216b4b 0x80042205ba 0x800421c5c3 0x800421c0b0 0x800421bcd3 0x400186 0x400c5c 0x400ca5.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 59 ticks
-Thread: 30 idle ticks, 27 kernel ticks, 2 user ticks
+(mmap-misalign) end
+mmap-misalign: exit(0)
+Execution of 'mmap-misalign' complete.
+Timer: 60 ticks
+Thread: 30 idle ticks, 28 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 111 reads, 250 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1389 characters output
-Key
+Console: 1124 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

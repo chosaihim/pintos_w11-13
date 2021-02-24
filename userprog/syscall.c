@@ -124,6 +124,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
             break;
         //! for VM
         case SYS_MMAP:
+            // check_address(f->R.rdi);
             f->R.rax = mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8);
             break;
         case SYS_MUNMAP:
@@ -290,6 +291,7 @@ int write(int fd, const void *buffer, unsigned length){
         }
     }
     lock_release(&filesys_lock);
+    // printf("dirty bit in write :: %d\n", pml4_is_dirty (&thread_current()->pml4, target));
     return ret;
 }
 void seek(int fd, unsigned position){
@@ -309,22 +311,30 @@ void close(int fd){
 void* mmap (void *addr, size_t length, int writable, int fd, off_t offset)
 {
     // printf("파일 fd :: %d\n", fd);
-    if (addr == NULL || length == 0 || spt_find_page(&thread_current()->spt, addr))
+
+    // printf("addr :: %p\n", pg_round_up(addr));
+    if (fd < 2 || addr == NULL || (long long)length <= 0 || is_kernel_vaddr(addr) || addr != pg_round_down(addr))
         return NULL;
-    // if (spt_find_page(&thread_current()->spt, addr))
-    //     return NULL;
 
-
-    // lock_acquire(&filesys_lock);
     struct file *target = process_get_file(fd);
+    if (target == NULL || file_length(target) == 0 || offset % PGSIZE)
+        return NULL;
+    
+    length = length > file_length(target) ? file_length(target) : length;
+    int iterator = (length / PGSIZE) + 1;
+    void* tmp = addr;
+    while (iterator)
+    {
+        if (spt_find_page(&thread_current()->spt, tmp))
+            return NULL;
+        iterator -= 1;
+        tmp += PGSIZE;
+    }
+
+    // printf("dirty bit syscall mmap :: %d\n", pml4_is_dirty(&thread_current()->pml4, addr));
+    // lock_acquire(&filesys_lock);
     return do_mmap(addr, length, writable, target, offset);
     // lock_release(&filesys_lock);
-    // struct file *mfile = file_open(addr);
-
-    // if(target == mfile)
-    //     exit(-1);
-    // if(addr == target)
-    //     exit(-1);
 
     // printf("파일 주소 :: %p\n", target);
     

@@ -1,6 +1,8 @@
 /* file.c: Implementation of memory backed file object (mmaped object). */
 
 #include "vm/vm.h"
+#include "userprog/process.h"
+#include "threads/mmu.h"
 
 static bool file_backed_swap_in (struct page *page, void *kva);
 static bool file_backed_swap_out (struct page *page);
@@ -51,44 +53,52 @@ void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
 	
-	ASSERT (length % PGSIZE == 0);
-	ASSERT (pg_ofs (addr) == 0);
-	ASSERT (offset % PGSIZE == 0);
-	// ASSERT (spt_find_page(&thread_current()->spt, addr));
     struct file *mfile = file_reopen(file);
+
+	void *return_addr = addr;
 
     // printf("여기서 터지나요??\n");
     // printf("addr :: %p\n", addr);
     // printf("mfile 주소 :: %p\n", mfile);
+    // printf("file 주소 :: %p\n", file);
 
-	size_t zero_length = PGSIZE - length;
+	// length = length > file_length(file) ? file_length(file) : length;
+	size_t zero_length = PGSIZE - (length % PGSIZE);
 
 	while (length > 0 || zero_length > 0) {
 
-        if(vm_alloc_page(VM_FILE, pg_round_down(addr), writable))
-            vm_claim_page(addr);
+		// spt_find_page(&thread_current()->spt, addr);
 
 		size_t page_read_bytes = length < PGSIZE ? length : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-		file_seek (mfile, offset);
+		struct box *box = (struct box *)malloc(sizeof(struct box));
+
+		box->file = mfile;
+		box->ofs = offset;
+		box->page_read_bytes = page_read_bytes;
+
+		// file_seek (mfile, offset);
         // printf("offset :; %d\n", offset);
         // printf("file pos :: %d\n", mfile->pos);
-		if (file_read (mfile, addr, page_read_bytes) != (int) page_read_bytes) {
-			// file_close(mfile);
-            return addr;
-			
-			// exit(-1);
-		}
-		memset (addr + page_read_bytes, 0, page_zero_bytes);
+        if(!vm_alloc_page_with_initializer(VM_FILE, pg_round_down(addr), writable, lazy_load_segment, box))
+			return NULL;
+		// memset (addr + page_read_bytes, 0, page_zero_bytes);
 		// printf("lazy load file file pos :: %d\n", file->pos);
+		// printf("is dirty mmap :: %d\n", pml4_is_dirty (&thread_current()->pml4, page->va));
+		// pml4_set_dirty(&thread_current()->pml4, page->va, 0);
+		// printf("is dirty mmap :: %d\n", pml4_is_dirty (&thread_current()->pml4, page->va));
+		// printf("is dirty after mmap :: %d\n", pml4_is_dirty (&thread_current()->pml4, addr));
+		// printf("file dirty :: %d\n", pml4_is_dirty(&thread_current()->spt, addr));
+		// printf("addr :: %p\n", return_addr);
+		// hex_dump(page->va, page->va, PGSIZE, true);
 
         length      -= page_read_bytes;
         zero_length -= page_zero_bytes;
         addr 		+= PGSIZE;
         offset 		+= page_read_bytes;
 	}
-	return addr;
+	return return_addr;
 	
 }
 
@@ -96,6 +106,41 @@ do_mmap (void *addr, size_t length, int writable,
 void
 do_munmap (void *addr) {
 
-    // struct page* page = spt_find_page(&thread_current()->spt, addr);
-    // destroy(page);
+	// printf("addr 주소 111 :: %p\n", addr);
+	// printf("addr 주소 222 :: %p\n", pg_round_down(addr));
+	// printf("addr 주소 111 :: %p\n", addr);
+	// printf("여기서 시작 !!! \n");
+
+    while (true)
+    {
+		// printf("2번째 !!! \n");
+		struct page* page = spt_find_page(&thread_current()->spt, addr);
+		// printf("page 주소 111 :: %p\n", page);
+		if (page == NULL){
+			// printf("out\n");
+			break;
+
+		}
+
+		// printf("=========== here 111 ============\n");
+		struct box* box = (struct box*)page->uninit.aux;
+		// printf("read_bytes :; %d\n", box->page_read_bytes);
+		// printf("read_bytes :; %d\n", box->ofs);
+		// printf("is dirty munmap :: %d\n", pml4_is_dirty (thread_current()->pml4, page->va));
+		// printf("스레드 이름 :: %s, page 주소 :: %p\n", thread_name(), page);
+		// printf("file 주소 :: %p\n", box->file);
+		if(pml4_is_dirty (thread_current()->pml4, page->va))
+		{
+			file_write_at(box->file, addr, box->page_read_bytes, box->ofs);
+			
+		}
+		// memset (&box->file + box->page_read_bytes, 0, PGSIZE - box->page_read_bytes);
+
+		// hash_delete(&thread_current()->spt.pages, &page->hash_elem);
+		// printf("=========== here 222 ============\n");
+        // vm_dealloc_page(page);
+        // destroy(page);
+		// free(box);
+		addr += PGSIZE;
+    }
 }

@@ -17,16 +17,27 @@ Executing 'mmap-shuffle':
 (mmap-shuffle) create "buffer"
 (mmap-shuffle) open "buffer"
 (mmap-shuffle) mmap "buffer"
-Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
-Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421fe7a 0x800421fe18 0x800422067b 0x800421c5c3 0x800421c0b0 0x800421bcd3 0x4001e9 0x4010ad 0x4010f6.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 144 ticks
-Thread: 30 idle ticks, 27 kernel ticks, 87 user ticks
+(mmap-shuffle) init: cksum=3115322833
+(mmap-shuffle) shuffle 0: cksum=2274652418
+(mmap-shuffle) shuffle 1: cksum=2281360714
+(mmap-shuffle) shuffle 2: cksum=3504443700
+(mmap-shuffle) shuffle 3: cksum=2850516818
+(mmap-shuffle) shuffle 4: cksum=2406916757
+(mmap-shuffle) shuffle 5: cksum=3377643430
+(mmap-shuffle) shuffle 6: cksum=658047850
+(mmap-shuffle) shuffle 7: cksum=493716582
+(mmap-shuffle) shuffle 8: cksum=3359519593
+(mmap-shuffle) shuffle 9: cksum=143675990
+(mmap-shuffle) end
+mmap-shuffle: exit(0)
+Execution of 'mmap-shuffle' complete.
+Timer: 213 ticks
+Thread: 30 idle ticks, 28 kernel ticks, 155 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 367 reads, 524 writes
+hd0:1: 367 reads, 4748 writes
 hd1:0: 114 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1398 characters output
-Key
+Console: 1530 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

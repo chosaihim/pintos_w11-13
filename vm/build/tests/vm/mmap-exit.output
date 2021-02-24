@@ -19,18 +19,21 @@ Executing 'mmap-exit':
 (child-mm-wrt) create "sample.txt"
 (child-mm-wrt) open "sample.txt"
 (child-mm-wrt) mmap "sample.txt"
-Kernel PANIC at ../../vm/file.c:54 in do_mmap(): assertion `length % PGSIZE == 0' failed.
-Call stack: 0x8004216b4b 0x800422056d 0x800421c5c3 0x800421c0b0 0x800421bcd3 0x4001de 0x400cf2 0x400d3b 0child-mm-wrt: exit(-1)
-(mmap-exit) wait for child (should return 0): FAILED
-mmap-exit: exit(1)
+(child-mm-wrt) end
+child-mm-wrt: exit(0)
+(mmap-exit) open "sample.txt" for verification
+(mmap-exit) verified contents of "sample.txt"
+(mmap-exit) close "sample.txt"
+(mmap-exit) end
+mmap-exit: exit(0)
 Execution of 'mmap-exit' complete.
-Timer: 65 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 5 user ticks
+Timer: 67 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 6 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 184 reads, 472 writes
+hd0:1: 209 reads, 474 writes
 hd1:0: 210 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1390 characters output
+Console: 1300 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

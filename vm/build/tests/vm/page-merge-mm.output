@@ -4,7 +4,7 @@ Kernel command line: -q -f put page-merge-mm put child-qsort-mm run page-merge-m
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  157,081,600 loops/s.
+Calibrating timer...  130,867,200 loops/s.
 hd0:0: detected 313 sector (156 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 224 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -18,7 +18,7 @@ Executing 'page-merge-mm':
 (page-merge-mm) init
 (page-merge-mm) sort chunk 0
 (page-merge-mm) sort chunk 1
-child-qsort-mm: exit(80)
+child-qsort-mm: exit(-1)
 (page-merge-mm) sort chunk 2
 child-qsort-mm: exit(80)
 (page-merge-mm) sort chunk 3
@@ -26,17 +26,6 @@ child-qsort-mm: exit(80)
 child-qsort-mm: exit(80)
 child-qsort-mm: exit(80)
 (page-merge-mm) sort chunk 5
+child-qsort-mm: exit(-1)
 child-qsort-mm: exit(80)
-Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
-Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421fe7a 0x800421fe18 0x800422002d 0x800421a3db 0x80042077b2.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 301 ticks
-Thread: 30 idle ticks, 39 kernel ticks, 232 user ticks
-hd0:0: 0 reads, 0 writes
-hd0:1: 1790 reads, 3630 writes
-hd1:0: 224 reads, 0 writes
-hd1:1: 0 reads, 0 writes
-Console: 1666 characters output
-Key
+TIMEOUT
