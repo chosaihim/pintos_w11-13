@@ -34,113 +34,125 @@ file_backed_initializer (struct page *page, enum vm_type type, void *kva) {
 static bool
 file_backed_swap_in (struct page *page, void *kva) {
 	struct file_page *file_page UNUSED = &page->file;
+
+    if (page == NULL)
+        return false;
+
+    struct box * aux = (struct box *) page->uninit.aux;
+
+    struct file *file = aux->file;
+	off_t offset = aux->ofs;
+    size_t page_read_bytes = aux->page_read_bytes;
+    size_t page_zero_bytes = PGSIZE - page_read_bytes;
+
+    /* Get a page of memory. */
+
+    /* Load this page. */
+
+	file_seek (file, offset);
+
+    if (file_read (file, kva, page_read_bytes) != (int) page_read_bytes) {
+        // palloc_free_page (kva);
+        return false;
+    }
+	// printf("여기서 터지나요??\n");
+    // printf("lazy load file file pos :: %d\n", file->pos);
+    memset (kva + page_read_bytes, 0, page_zero_bytes);
+    // /* Add the page to the process's address space. */
+
+    return true;
 }
 
 /* Swap out the page by writeback contents to the file. */
 static bool
 file_backed_swap_out (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
+        
+    if (page == NULL)
+        return false;
+
+    struct box * aux = (struct box *) page->uninit.aux;
+    
+    //!DIRTY CHECK 
+    if(pml4_is_dirty(thread_current()->pml4, page->va)){
+        file_write_at(aux->file, page->va, aux->page_read_bytes, aux->ofs);
+        pml4_set_dirty (thread_current()->pml4, page->va, 0);
+    }
+
+    pml4_clear_page(thread_current()->pml4, page->va);
 }
 
 /* Destory the file backed page. PAGE will be freed by the caller. */
 static void
 file_backed_destroy (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
+
+    // file_close(((struct box*)page->uninit.aux)->file);
+    // free(page);
 }
 
 /* Do the mmap */
 void *
 do_mmap (void *addr, size_t length, int writable,
 		struct file *file, off_t offset) {
-	
+
     struct file *mfile = file_reopen(file);
 
-	void *return_addr = addr;
+    void * ori_addr = addr;
+    size_t read_bytes = length > file_length(file) ? file_length(file) : length;
+    size_t zero_bytes = PGSIZE - read_bytes % PGSIZE;
 
-    // printf("여기서 터지나요??\n");
-    // printf("addr :: %p\n", addr);
-    // printf("mfile 주소 :: %p\n", mfile);
-    // printf("file 주소 :: %p\n", file);
-
-	// length = length > file_length(file) ? file_length(file) : length;
-	size_t zero_length = PGSIZE - (length % PGSIZE);
-
-	while (length > 0 || zero_length > 0) {
-
-		// spt_find_page(&thread_current()->spt, addr);
-
-		size_t page_read_bytes = length < PGSIZE ? length : PGSIZE;
+    // ASSERT(length != 0);
+    // ASSERT(file_length(file) != 0);
+    // ASSERT(addr != 0);
+    
+    // printf("========== in do_mmap ============\n");
+    
+	while (read_bytes > 0 || zero_bytes > 0) {
+		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-		struct box *box = (struct box *)malloc(sizeof(struct box));
+        struct box *box = (struct box*)malloc(sizeof(struct box));
+        box->file = mfile;
+        box->ofs = offset;
+        box->page_read_bytes = page_read_bytes;
 
-		box->file = mfile;
-		box->ofs = offset;
-		box->page_read_bytes = page_read_bytes;
-
-		// file_seek (mfile, offset);
-        // printf("offset :; %d\n", offset);
-        // printf("file pos :: %d\n", mfile->pos);
-        if(!vm_alloc_page_with_initializer(VM_FILE, pg_round_down(addr), writable, lazy_load_segment, box))
+		if (!vm_alloc_page_with_initializer (VM_FILE, addr,
+					writable, lazy_load_segment, box)){
+            // printf("is here??\n");
 			return NULL;
-		// memset (addr + page_read_bytes, 0, page_zero_bytes);
-		// printf("lazy load file file pos :: %d\n", file->pos);
-		// printf("is dirty mmap :: %d\n", pml4_is_dirty (&thread_current()->pml4, page->va));
-		// pml4_set_dirty(&thread_current()->pml4, page->va, 0);
-		// printf("is dirty mmap :: %d\n", pml4_is_dirty (&thread_current()->pml4, page->va));
-		// printf("is dirty after mmap :: %d\n", pml4_is_dirty (&thread_current()->pml4, addr));
-		// printf("file dirty :: %d\n", pml4_is_dirty(&thread_current()->spt, addr));
-		// printf("addr :: %p\n", return_addr);
-		// hex_dump(page->va, page->va, PGSIZE, true);
-
-        length      -= page_read_bytes;
-        zero_length -= page_zero_bytes;
-        addr 		+= PGSIZE;
-        offset 		+= page_read_bytes;
+        }
+		read_bytes -= page_read_bytes;
+		zero_bytes -= page_zero_bytes;
+		addr       += PGSIZE;
+		offset     += page_read_bytes;
 	}
-	return return_addr;
-	
+	return ori_addr;
+
 }
 
 /* Do the munmap */
 void
 do_munmap (void *addr) {
 
-	// printf("addr 주소 111 :: %p\n", addr);
-	// printf("addr 주소 222 :: %p\n", pg_round_down(addr));
-	// printf("addr 주소 111 :: %p\n", addr);
-	// printf("여기서 시작 !!! \n");
-
     while (true)
     {
-		// printf("2번째 !!! \n");
-		struct page* page = spt_find_page(&thread_current()->spt, addr);
-		// printf("page 주소 111 :: %p\n", page);
-		if (page == NULL){
-			// printf("out\n");
-			break;
+        struct page* page = spt_find_page(&thread_current()->spt, addr);
+        
+        if (page == NULL)
+            break;
 
-		}
+        struct box * aux = (struct box *) page->uninit.aux;
+        
+        //!DIRTY CHECK 
+        if(pml4_is_dirty(thread_current()->pml4, page->va)){
+            file_write_at(aux->file, addr, aux->page_read_bytes, aux->ofs);
+            pml4_set_dirty (thread_current()->pml4, page->va, 0);
+        }
 
-		// printf("=========== here 111 ============\n");
-		struct box* box = (struct box*)page->uninit.aux;
-		// printf("read_bytes :; %d\n", box->page_read_bytes);
-		// printf("read_bytes :; %d\n", box->ofs);
-		// printf("is dirty munmap :: %d\n", pml4_is_dirty (thread_current()->pml4, page->va));
-		// printf("스레드 이름 :: %s, page 주소 :: %p\n", thread_name(), page);
-		// printf("file 주소 :: %p\n", box->file);
-		if(pml4_is_dirty (thread_current()->pml4, page->va))
-		{
-			file_write_at(box->file, addr, box->page_read_bytes, box->ofs);
-			
-		}
-		// memset (&box->file + box->page_read_bytes, 0, PGSIZE - box->page_read_bytes);
-
-		// hash_delete(&thread_current()->spt.pages, &page->hash_elem);
-		// printf("=========== here 222 ============\n");
+        pml4_clear_page(thread_current()->pml4, page->va);
         // vm_dealloc_page(page);
-        // destroy(page);
-		// free(box);
-		addr += PGSIZE;
+        addr += PGSIZE;
     }
+
 }

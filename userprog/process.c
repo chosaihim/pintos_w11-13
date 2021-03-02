@@ -952,19 +952,10 @@ lazy_load_segment (struct page *page, void *aux) {
     size_t page_read_bytes = ((struct box *)aux)->page_read_bytes;
     size_t page_zero_bytes = PGSIZE - page_read_bytes;
 
-	// printf("================= in the lazy =================\n\n");
-	// printf("스레드 이름 :: %s \n", thread_name());
-	// printf("page 주소 :: %p\n", page);
-	// printf("page va 주소 :: %p\n", page->va);
-    // printf("file :: %p\n", file);
-    // printf("lazy load file ofs :: %d\n", ofs);
-    // printf("lazy load read_bytes :: %d\n", page_read_bytes);
-
     /* Get a page of memory. */
 
     /* Load this page. */
-	// printf("page 주소 :: %p\n", page->frame->page);
-	// printf("frame 주소 :: %p\n", page->frame);
+
 	file_seek (file, ofs);
 
     if (file_read (file, page->frame->kva, page_read_bytes) != (int) page_read_bytes) {
@@ -1011,22 +1002,16 @@ load_segment (struct file *file, off_t ofs, uint8_t *upage,
 		 * and zero the final PAGE_ZERO_BYTES bytes. */
 		size_t page_read_bytes = read_bytes < PGSIZE ? read_bytes : PGSIZE;
 		size_t page_zero_bytes = PGSIZE - page_read_bytes;
-        // printf("read_byte :: %d\n", page_read_bytes);
-        // printf("zero_byte :: %d\n", page_zero_bytes);
 
-		/* TODO: Set up aux to pass information to the lazy_load_segment. */
+		// TODO: Set up aux to pass information to the lazy_load_segment. */
         //! ADD: aux modified
-		// printf("load segment file pos :: %d\n", file->pos);
-		// printf("load segment offset :: %d\n", ofs);
+
         struct box *box = (struct box*)malloc(sizeof(struct box));
 
         box->file = file;
         box->ofs = ofs;
         box->page_read_bytes = page_read_bytes;
-        // printf("upage :: %p\n", upage);
-		// printf("load_seg writable :: %d\n", writable);
-		// printf("================ in the load seg ========== \n\n");
-		// printf("file %p\n",file);
+
 		if (!vm_alloc_page_with_initializer (VM_ANON, upage,
 					writable, lazy_load_segment, box))
 			return false;
@@ -1057,37 +1042,16 @@ setup_stack (struct intr_frame *if_) {
 	//! stack 영역인 page임을 MARK
     if (vm_alloc_page(VM_ANON | VM_MARKER_0, stack_bottom, 1))
     {
-        // struct page* stack = spt_find_page(&thread_current()->spt, stack_bottom);
-        // printf("스택 주소 :: %p\n", stack);
-        // printf("스택 주소 va :: %p\n", stack->va);
-
-        // struct frame *frame = palloc_get_page(PAL_USER | PAL_ZERO);
-    	// frame->kva = palloc_get_page (PAL_USER | PAL_ZERO);
-        // uint8_t *kpage;
-        // kpage = palloc_get_page(PAL_USER | PAL_ZERO);
 
 		success = vm_claim_page(stack_bottom);
-
-	    // if (frame != NULL) {
-        //     /* Set links */
-        //     frame->page = stack;
-        //     stack->frame = frame;
-		//     success = install_page (stack->va, frame->kva, stack->writable);
 		
 		if (success){
 			// printf("here??\n");
 			if_->rsp = USER_STACK;
+            thread_current()->stack_bottom = stack_bottom;
 		}
-		// else
-		// {
-		// 	palloc_free_page(frame->kva);
-		// 	palloc_free_page(frame);
-		// 	// palloc_free_page(kpage);
-		// }
-	    // }
+
     }
-    // printf("페이지 주소 :: %p\n", page);    
-    // printf("현재 스레드 spt :: %p\n", curr->spt.pages);
 
     //! END: setup_stack
 

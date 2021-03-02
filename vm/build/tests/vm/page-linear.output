@@ -15,16 +15,20 @@ Putting 'page-linear' into the file system...
 Executing 'page-linear':
 (page-linear) begin
 (page-linear) initialize
-Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
-Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421ff47 0x800421fee5 0x800421fdab 0x800421bc49 0x8004208fdc 0x8004209547 0x40012e 0x400fc9 0x401012.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 145 ticks
-Thread: 30 idle ticks, 26 kernel ticks, 89 user ticks
+(page-linear) read pass
+(page-linear) read/modify/write pass one
+(page-linear) read/modify/write pass two
+(page-linear) read pass
+(page-linear) end
+page-linear: exit(0)
+Execution of 'page-linear' complete.
+Timer: 207 ticks
+Thread: 29 idle ticks, 35 kernel ticks, 144 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 81 reads, 244 writes
 hd1:0: 108 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1328 characters output
-Key
+Console: 1121 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

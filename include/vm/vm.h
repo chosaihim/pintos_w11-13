@@ -91,6 +91,8 @@ struct frame
 {
     void *kva;
     struct page *page;
+    //! ADD
+    struct list_elem frame_elem;
 };
 
 /* The function table for page operations.

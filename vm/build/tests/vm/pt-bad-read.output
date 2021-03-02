@@ -21,7 +21,7 @@ Execution of 'pt-bad-read' complete.
 Timer: 59 ticks
 Thread: 30 idle ticks, 28 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 112 reads, 250 writes
+hd0:1: 111 reads, 250 writes
 hd1:0: 106 reads, 0 writes
 hd1:1: 0 reads, 0 writes
 Console: 1039 characters output

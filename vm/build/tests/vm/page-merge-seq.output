@@ -41,16 +41,58 @@ child-sort: exit(123)
 child-sort: exit(123)
 (page-merge-seq) child[5] wait success
 (page-merge-seq) sort chunk 6
-Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
-Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421ff47 0x800421fee5 0x80042200fa 0x800421a3db 0x80042077b2.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 279 ticks
-Thread: 30 idle ticks, 39 kernel ticks, 210 user ticks
+(page-merge-seq) child[6] exec
+child-sort: exit(123)
+(page-merge-seq) child[6] wait success
+(page-merge-seq) sort chunk 7
+(page-merge-seq) child[7] exec
+child-sort: exit(123)
+(page-merge-seq) child[7] wait success
+(page-merge-seq) sort chunk 8
+(page-merge-seq) child[8] exec
+child-sort: exit(123)
+(page-merge-seq) child[8] wait success
+(page-merge-seq) sort chunk 9
+(page-merge-seq) child[9] exec
+child-sort: exit(123)
+(page-merge-seq) child[9] wait success
+(page-merge-seq) sort chunk 10
+(page-merge-seq) child[10] exec
+child-sort: exit(123)
+(page-merge-seq) child[10] wait success
+(page-merge-seq) sort chunk 11
+(page-merge-seq) child[11] exec
+child-sort: exit(123)
+(page-merge-seq) child[11] wait success
+(page-merge-seq) sort chunk 12
+(page-merge-seq) child[12] exec
+child-sort: exit(123)
+(page-merge-seq) child[12] wait success
+(page-merge-seq) sort chunk 13
+(page-merge-seq) child[13] exec
+child-sort: exit(123)
+(page-merge-seq) child[13] wait success
+(page-merge-seq) sort chunk 14
+(page-merge-seq) child[14] exec
+child-sort: exit(123)
+(page-merge-seq) child[14] wait success
+(page-merge-seq) sort chunk 15
+(page-merge-seq) child[15] exec
+child-sort: exit(123)
+(page-merge-seq) child[15] wait success
+(page-merge-seq) merge
+(page-merge-seq) verify
+(page-merge-seq) success, buf_idx=1,032,192
+(page-merge-seq) end
+page-merge-seq: exit(0)
+Execution of 'page-merge-seq' complete.
+Timer: 12544 ticks
+Thread: 34 idle ticks, 63 kernel ticks, 12448 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 1927 reads, 2246 writes
+hd0:1: 4902 reads, 4640 writes
 hd1:0: 216 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 2127 characters output
-Key
+Console: 3141 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

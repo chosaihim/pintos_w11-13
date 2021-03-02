@@ -17,16 +17,16 @@ Executing 'swap-file':
 (swap-file) begin
 (swap-file) open "large.txt"
 (swap-file) mmap "large.txt"
-Kernel PANIC at ../../threads/mmu.c:242 in pml4_set_page(): assertion `is_kernel_vaddr(kpage)' failed.
-Call stack: 0x8004216b4b 0x800420d2ce 0x800421b475 0x800421ff47 0x800421fee5 0x800421fdab 0x800421bc49 0x8004208fdc 0x8004209547 0x4001f3 0x400d85 0x400dce.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Timer: 307 ticks
-Thread: 29 idle ticks, 210 kernel ticks, 68 user ticks
+(swap-file) end
+swap-file: exit(0)
+Execution of 'swap-file' complete.
+Timer: 442 ticks
+Thread: 30 idle ticks, 205 kernel ticks, 207 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 4912 reads, 15900 writes
+hd0:1: 7945 reads, 15900 writes
 hd1:0: 7931 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1414 characters output
-Key
+Console: 1071 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

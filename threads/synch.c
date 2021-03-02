@@ -122,7 +122,9 @@ sema_up (struct semaphore *sema) {
     /* only if ready list is not empty */
     /* why not always ? - overhead (maybe) */
     // 지금 나 vs ready 의 대장
-    test_max_priority();
+    //! ADD
+    if(!intr_context())
+        test_max_priority();
     intr_set_level (old_level);
 
 }

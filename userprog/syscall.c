@@ -24,7 +24,7 @@ void syscall_entry (void);
 void syscall_handler (struct intr_frame *);
 
 /* 헤더에 넣으면 오류가 나요 */
-void* check_address(void *addr);
+struct page *check_address(void *addr);
 // void get_frame_argument(void *rsp, int *arg);
 
 
@@ -65,9 +65,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
     /* 우리는 상한선에서 출발해서 밑으로 쌓았다. */
     //! ADD: check_address 주석
     check_address(f->rsp);
-    #ifdef VM
-    thread_current()->rsp_stgr = f->rsp;
-    #endif
+    thread_current()-> rsp_stack = f->rsp;
 
     uint64_t number = f->R.rax;
     switch(number){
@@ -105,12 +103,12 @@ syscall_handler (struct intr_frame *f UNUSED) {
             break;
         case SYS_READ:
             //! ADD: insert check_valid_buffer instead of check_address
-            // check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 0);
+            check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 1);
             f->R.rax = read(f->R.rdi, f->R.rsi, f->R.rdx);
             break;
         case SYS_WRITE:
-            // check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 1);
             //! ADD:가 아니라 check_valid_string 만들지 않음(PPT랑 다름)
+            check_valid_buffer(f->R.rsi, f->R.rdx, f->rsp, 0);
             f->R.rax = write(f->R.rdi, f->R.rsi, f->R.rdx);
             break;
         case SYS_SEEK :
@@ -122,9 +120,8 @@ syscall_handler (struct intr_frame *f UNUSED) {
         case SYS_CLOSE:
             close(f->R.rdi);
             break;
-        //! for VM
+         //! for VM
         case SYS_MMAP:
-            // check_address(f->R.rdi);
             f->R.rax = mmap(f->R.rdi, f->R.rsi, f->R.rdx, f->R.r10, f->R.r8);
             break;
         case SYS_MUNMAP:
@@ -136,38 +133,31 @@ syscall_handler (struct intr_frame *f UNUSED) {
 
 /*** It could be dangerous ***/
 //! ADD: check_address
-void* check_address(void *addr){
+struct page * check_address(void *addr){
     if (is_kernel_vaddr(addr))
     {
         exit(-1);
     }
-    // return spt_find_page(&thread_current()->spt, addr);
+    return spt_find_page(&thread_current()->spt, addr);
 }
 //! END: check_address
 
 // //! ADD: check_valid_buffer
-// void check_valid_buffer(void* buffer, unsigned size, void* rsp, bool to_write)
-// {
-//     /* 인자로받은buffer부터buffer + size까지의크기가한페이지의크기를넘을수도있음*/
-//     /*check_address를이용해서주소의유저영역여부를검사함과동시에vm_entry구조체를얻음*/
-//     /* 해당주소에대한vm_entry존재여부와vm_entry의writable멤버가true인지검사*/
-//     /* 위내용을buffer부터buffer + size까지의주소에포함되는vm_entry들에대해적용*/
-//     for(int i = 0; i <= size; i++)
-//     {
-//         struct page* page = check_address((char *)buffer + i);
-//         if(page != NULL)
-//         {
-//             if(to_write == true)
-//             {
-//                 if(page->writable == false)
-//                 {
-//                     exit(-1);
-//                 }
-
-//             }
-//         }
-//     }
-// }
+void check_valid_buffer(void* buffer, unsigned size, void* rsp, bool to_write)
+{
+    /* 인자로받은buffer부터buffer + size까지의크기가한페이지의크기를넘을수도있음*/
+    /*check_address를이용해서주소의유저영역여부를검사함과동시에vm_entry구조체를얻음*/
+    /* 해당주소에대한vm_entry존재여부와vm_entry의writable멤버가true인지검사*/
+    /* 위내용을buffer부터buffer + size까지의주소에포함되는vm_entry들에대해적용*/
+    for (int i = 0; i < size; i++)
+    {
+        struct page* page = check_address(buffer + i);
+        if(page == NULL)
+            exit(-1);
+        if(to_write == true && page->writable == false)
+            exit(-1);
+    }
+}
 // //! END: check_valid_buffer
 
 // // //! ADD: check_valid_string
@@ -189,7 +179,7 @@ void exit(int status) {
     struct thread *curr = thread_current();
     curr->exit_status = status;
     curr->is_exit = 1; // be dead by exit syscall!
-    // hex_dump(USER_STACK, USER_STACK, PGSIZE, 1);
+    // hex_dump(USER_STACK-PGSIZE, (void *)(USER_STACK-PGSIZE), PGSIZE, 1);
     // printf("여기 들어옴??\n");
     printf("%s: exit(%d)\n", thread_current()->name, thread_current()->exit_status);
     thread_exit();
@@ -199,7 +189,7 @@ pid_t fork(const char *thread_name){
     // printf("I'm %d, syscall-fork\n", thread_current()->tid);
     // printf("I'm %d, syscall-fork - fd_table[2] : %p\n", thread_current()->tid, thread_current()->fd_table[2]);
     // printf("I'm %d, syscall-fork - fd_table[3] : %p\n", thread_current()->tid, thread_current()->fd_table[3]);
-
+    
     return process_fork(thread_name,&thread_current()->fork_tf);
 }
 
@@ -258,7 +248,7 @@ int read(int fd, void *buffer, unsigned length){
     lock_acquire(&filesys_lock);
     struct file *target = process_get_file(fd);
     int ret = -1;
-    // printf("파일 주소 :: %p\n", target);
+
     if(target) /* fd == 0 이 었으면, 0을 return 했을 것이다.*/
     {   
         if (fd == 0)
@@ -291,7 +281,7 @@ int write(int fd, const void *buffer, unsigned length){
         }
     }
     lock_release(&filesys_lock);
-    // printf("dirty bit in write :: %d\n", pml4_is_dirty (&thread_current()->pml4, target));
+
     return ret;
 }
 void seek(int fd, unsigned position){
@@ -306,41 +296,42 @@ void close(int fd){
     process_close_file(fd);
 }
 
-
-//! for VM
-void* mmap (void *addr, size_t length, int writable, int fd, off_t offset)
+//!ADD Memory Mapped Files
+void *mmap (void *addr, size_t length, int writable, int fd, off_t offset)
 {
-    // printf("파일 fd :: %d\n", fd);
-
-    // printf("addr :: %p\n", pg_round_up(addr));
-    if (fd < 2 || addr == NULL || (long long)length <= 0 || is_kernel_vaddr(addr) || addr != pg_round_down(addr))
+    // printf(">>>>>> PGSIZE:%d\n",PGSIZE);
+    //! mmap-off and mmap-bad-off
+    if(offset % PGSIZE != 0){
         return NULL;
-
-    struct file *target = process_get_file(fd);
-    if (target == NULL || file_length(target) == 0 || offset % PGSIZE)
-        return NULL;
-    
-    length = length > file_length(target) ? file_length(target) : length;
-    int iterator = (length / PGSIZE) + 1;
-    void* tmp = addr;
-    while (iterator)
-    {
-        if (spt_find_page(&thread_current()->spt, tmp))
-            return NULL;
-        iterator -= 1;
-        tmp += PGSIZE;
     }
 
-    // printf("dirty bit syscall mmap :: %d\n", pml4_is_dirty(&thread_current()->pml4, addr));
+    if (pg_round_down(addr) != addr || is_kernel_vaddr(addr) || addr == NULL || (long long)length <= 0)
+        // exit(-1);
+        return NULL;
+    
+    if(fd == 0 || fd == 1)
+        exit(-1);
+    
+    //! vm_overlap
+    if(spt_find_page(&thread_current()->spt, addr))
+        return NULL;
+
     // lock_acquire(&filesys_lock);
-    return do_mmap(addr, length, writable, target, offset);
-    // lock_release(&filesys_lock);
+    struct file *target = process_get_file(fd);
+
+    if(target == NULL) //? fd가 0이랑 1인 것도 알아서 걸러준다.!!
+        return NULL;
 
     // printf("파일 주소 :: %p\n", target);
-    
+    // printf("=============== HELLO =============\n");
+    void * ret = do_mmap(addr, length, writable, target, offset);
+    // lock_release(&filesys_lock);
+
+    return ret;
 }
 
 void munmap (void *addr)
 {
     do_munmap(addr);
 }
+//!END Memory Mapped Files
