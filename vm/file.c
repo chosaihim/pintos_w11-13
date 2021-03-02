@@ -86,9 +86,6 @@ file_backed_swap_out (struct page *page) {
 static void
 file_backed_destroy (struct page *page) {
 	struct file_page *file_page UNUSED = &page->file;
-
-    // file_close(((struct box*)page->uninit.aux)->file);
-    // free(page);
 }
 
 /* Do the mmap */

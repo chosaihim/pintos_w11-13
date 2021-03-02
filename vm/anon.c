@@ -88,6 +88,7 @@ anon_swap_out (struct page *page) {
 
     bitmap_set(swap_table, page_no, true);
     pml4_clear_page(thread_current()->pml4, page->va);
+    // page->frame = NULL;
 
     anon_page->swap_index = page_no;
 

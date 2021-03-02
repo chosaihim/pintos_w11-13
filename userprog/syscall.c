@@ -64,8 +64,10 @@ syscall_handler (struct intr_frame *f UNUSED) {
     /* rsp 유효성 검증 */
     /* 우리는 상한선에서 출발해서 밑으로 쌓았다. */
     //! ADD: check_address 주석
-    check_address(f->rsp);
-    thread_current()-> rsp_stack = f->rsp;
+    // check_address(f->rsp);
+    #ifdef VM
+    thread_current()->rsp_stack = f->rsp;
+    #endif
 
     uint64_t number = f->R.rax;
     switch(number){

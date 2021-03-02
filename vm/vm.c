@@ -133,17 +133,19 @@ spt_find_page(struct supplemental_page_table *spt UNUSED, void *va UNUSED)
 bool spt_insert_page(struct supplemental_page_table *spt UNUSED,
                      struct page *page UNUSED)
 {
-    int succ = false;
+    // int succ = false;
     /* TODO: Fill this function. */
     //! ADD: vm_insert
     // printf("=== in the spt_insert === \n");
-    if(hash_insert(&spt->pages, &page->hash_elem) == NULL)
-    {
-        // printf("=== in the spt_insert 222 === \n");
-        succ = true;
-    }
+    // if(hash_insert(&spt->pages, &page->hash_elem) == NULL)
+    // {
+    //     // printf("=== in the spt_insert 222 === \n");
+    //     succ = true;
+    // }
+    
+    return insert_page(&spt->pages, page);
     //! END: vm_insert
-    return succ;
+    // return succ;
 }
 
 void spt_remove_page(struct supplemental_page_table *spt, struct page *page)
@@ -209,6 +211,7 @@ vm_get_frame(void)
     if(frame->kva == NULL)
     {
         frame = vm_evict_frame();
+        frame->page = NULL;
         return frame;
     }
     // printf("vm_get_page!! \n");
@@ -230,7 +233,7 @@ vm_stack_growth(void *addr UNUSED)
     {
         // printf("round down 주소 :: %p\n", addr);
         vm_claim_page(addr);
-        thread_current()->stack_bottom = addr;
+        thread_current()->stack_bottom -= PGSIZE;
     }
 
 }
@@ -242,15 +245,16 @@ vm_handle_wp(struct page *page UNUSED)
 }
 
 /* Return true on success */
-bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
-                         bool user UNUSED, bool write UNUSED, bool not_present UNUSED)
+bool vm_try_handle_fault(struct intr_frame *f, void *addr,
+                         bool user, bool write UNUSED, bool not_present)
 {
     // printf("here??\n");
-    struct supplemental_page_table *spt UNUSED = &thread_current()->spt;
+    struct supplemental_page_table *spt = &thread_current()->spt;
     // struct page *page = NULL;
     /* TODO: Validate the fault */
     /* TODO: Your code goes here */
     //! ADD: modify vm_try_handle_fault
+    // printf("after??\n");
 
     // struct page* page = spt_find_page(spt, addr);
     // printf("addr :: %p\n", addr);
@@ -258,17 +262,19 @@ bool vm_try_handle_fault(struct intr_frame *f UNUSED, void *addr UNUSED,
     // if (page == NULL) return false;
     if(is_kernel_vaddr(addr))
     {
+        // printf("is kernel page addr :: %p\n", addr);
         return false;
     }
 
     // printf("page addr :: %p\n", addr);
+    // void *rsp_stack = user ? f->rsp : thread_current()->rsp_stack;
+    void *rsp_stack = is_kernel_vaddr(f->rsp) ? thread_current()->rsp_stack : f->rsp;
     if (not_present){
 
         // printf("ee\n");
         // printf("here?? 22\n");
         if(!vm_claim_page(addr))
         {
-            void *rsp_stack = is_kernel_vaddr(f->rsp) ? thread_current()->stack_bottom : f->rsp;
             // printf("rsp addr :: %p\n", rsp_stack);
             if(rsp_stack - 8 <= addr && USER_STACK - 0x100000 <= addr && addr <= USER_STACK)
             {
@@ -325,9 +331,7 @@ vm_do_claim_page(struct page *page)
     /* TODO: Insert page table entry to map page's VA to frame's PA. */
     //! ADD: insert pml4_set_page
     // TODO : mapping va to pa in the page table
-    // printf("page->frame :: %p\n", page->frame);
-    // printf("frame->page :: %p\n", frame->page);
-    // printf("page->va :: %p\n", page->va);
+
     if(install_page(page->va, frame->kva, page->writable))
     {
         return swap_in(page, frame->kva);
@@ -418,9 +422,11 @@ void supplemental_page_table_kill(struct supplemental_page_table *spt UNUSED)
         if (page->operations->type == VM_FILE)
         {
             do_munmap(page->va);
+            // destroy(page);
         }
-        destroy(page);
+        // free(page);
     }
+    hash_destroy(&spt->pages, spt_destructor);
 }
 
 //! ADD: Functions for hash table
@@ -462,7 +468,13 @@ bool delete_page(struct hash *pages, struct page *p)
 void spt_destructor(struct hash_elem *e, void* aux)
 {
     const struct page *p = hash_entry(e, struct page, hash_elem);
-    // printf("spt_dest \n");
-    // do_munmap(p->va);
-    vm_dealloc_page(p);
+
+    // struct page *page = hash_entry (hash_cur (&i), struct page, hash_elem);
+
+    // if (p->operations->type == VM_FILE)
+    // {
+    //     do_munmap(p->va);
+    //     // destroy(page);
+    // }
+    free(p);
 }
