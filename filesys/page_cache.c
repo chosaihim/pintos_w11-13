@@ -15,6 +15,9 @@ static const struct page_operations page_cache_op = {
 
 tid_t page_cache_workerd;
 
+//! ADD
+#define BUFFER_CACHE_SIZE 64
+
 /* The initializer of file vm */
 void
 pagecache_init (void) {

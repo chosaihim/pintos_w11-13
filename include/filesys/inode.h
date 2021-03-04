@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "filesys/off_t.h"
 #include "devices/disk.h"
+//! ADD
+#include "filesys/fat.h"
 
 struct bitmap;
 

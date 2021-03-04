@@ -208,6 +208,7 @@ void
 disk_read (struct disk *d, disk_sector_t sec_no, void *buffer) {
 	struct channel *c;
 
+	// printf("disk_read sec_no :: %d\n", sec_no);
 	ASSERT (d != NULL);
 	ASSERT (buffer != NULL);
 
@@ -231,6 +232,8 @@ disk_read (struct disk *d, disk_sector_t sec_no, void *buffer) {
 void
 disk_write (struct disk *d, disk_sector_t sec_no, const void *buffer) {
 	struct channel *c;
+
+	// printf("disk_write sec_no :: %d\n", sec_no);
 
 	ASSERT (d != NULL);
 	ASSERT (buffer != NULL);

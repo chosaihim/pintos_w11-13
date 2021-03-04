@@ -46,8 +46,8 @@ child-qsort-mm: exit(80)
 (page-merge-mm) end
 page-merge-mm: exit(0)
 Execution of 'page-merge-mm' complete.
-Timer: 2001 ticks
-Thread: 30 idle ticks, 44 kernel ticks, 1927 user ticks
+Timer: 1986 ticks
+Thread: 30 idle ticks, 45 kernel ticks, 1911 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 4880 reads, 6726 writes
 hd1:0: 224 reads, 0 writes

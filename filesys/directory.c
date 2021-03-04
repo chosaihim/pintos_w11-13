@@ -23,6 +23,7 @@ struct dir_entry {
  * given SECTOR.  Returns true if successful, false on failure. */
 bool
 dir_create (disk_sector_t sector, size_t entry_cnt) {
+	printf("dir_entry size :: %d\n", sizeof(struct dir_entry));
 	return inode_create (sector, entry_cnt * sizeof (struct dir_entry));
 }
 
@@ -46,7 +47,16 @@ dir_open (struct inode *inode) {
  * Return true if successful, false on failure. */
 struct dir *
 dir_open_root (void) {
+	//! ADD
+	#ifdef EFILESYS
+
+	return dir_open (inode_open (cluster_to_sector(ROOT_DIR_SECTOR)));
+
+	#else
+
 	return dir_open (inode_open (ROOT_DIR_SECTOR));
+
+	#endif
 }
 
 /* Opens and returns a new directory for the same inode as DIR.
@@ -84,7 +94,7 @@ lookup (const struct dir *dir, const char *name,
 
 	ASSERT (dir != NULL);
 	ASSERT (name != NULL);
-
+	// printf("lookup before read at\n");
 	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 			ofs += sizeof e)
 		if (e.in_use && !strcmp (name, e.name)) {
@@ -147,11 +157,13 @@ dir_add (struct dir *dir, const char *name, disk_sector_t inode_sector) {
 	 * inode_read_at() will only return a short read at end of file.
 	 * Otherwise, we'd need to verify that we didn't get a short
 	 * read due to something intermittent such as low memory. */
+	// printf("before write\n");
 	for (ofs = 0; inode_read_at (dir->inode, &e, sizeof e, ofs) == sizeof e;
 			ofs += sizeof e)
 		if (!e.in_use)
 			break;
 
+	// printf("after write\n");
 	/* Write slot. */
 	e.in_use = true;
 	strlcpy (e.name, name, sizeof e.name);
