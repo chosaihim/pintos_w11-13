@@ -1,0 +1,17 @@
+FAIL
+Kernel panic in run: PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
+Call stack: 0x8004213cf3 0x800420fec1 0x800420f622 0x800421c20d 0x800421b008 0x800421c9c4 0x80042068d3 0x8004206186
+Translation of call stack:
+0x0000008004213cf3: debug_panic (lib/kernel/debug.c:32)
+0x000000800420fec1: select_sector (devices/disk.c:412)
+0x000000800420f622: disk_write (devices/disk.c:244)
+0x000000800421c20d: inode_write_at (filesys/inode.c:496)
+0x000000800421b008: file_write (filesys/file.c:96)
+0x000000800421c9c4: fsutil_put (filesys/fsutil.c:118)
+0x00000080042068d3: run_actions (threads/init.c:297)
+0x0000008004206186: main (threads/init.c:125)
+
+This assertion commonly fails when accessing a file via an inode that
+has been closed and freed.  Freeing an inode clears all its sector
+indexes to 0xcccccccc, which is not a valid sector number for disks
+smaller than about 1.6 TB.

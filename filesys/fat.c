@@ -154,16 +154,10 @@ void
 fat_fs_init (void) {
 	// TODO: Your code goes here. */
 	//! ADD
-    fat_fs->fat_length = fat_fs->bs.fat_sectors;
+    fat_fs->fat_length = fat_fs->bs.fat_sectors * DISK_SECTOR_SIZE / (sizeof(cluster_t) * SECTORS_PER_CLUSTER);
 	//! 데이터 섹터가 시작하는 지점?
     fat_fs->data_start = fat_fs->bs.fat_start + fat_fs->bs.fat_sectors;
-	// printf("size of cluster :: %d\n", sizeof(cluster_t));
-	// printf("### total sectors :: %d\n", fat_fs->bs.total_sectors);
-	// printf("### fat_sectors :: %d\n", fat_fs->bs.fat_sectors);
-	// printf("### root_dir_cluster :: %d\n", fat_fs->bs.root_dir_cluster);
-	// printf("data_start :: %d\n", fat_fs->data_start);
-	// printf("### data_start :: %d\n", fat_fs->data_start);
-	// printf("data_start :: %d\n", fat_fs->data_start);
+
 	//! END
 }
 
@@ -178,38 +172,30 @@ cluster_t
 fat_create_chain (cluster_t clst) {
 	// TODO: Your code goes here. */
 	//! ADD
-	cluster_t i = 1;
+	cluster_t i = fat_fs->data_start;
 	while (fat_get(i) != 0 && i < fat_fs->fat_length)
 	{
 		++i;
 	}
 	//! 실패하면 RETURN 무엇??
-	// printf("fat_length %d\n", fat_fs->fat_length);
+	
 	if (i == fat_fs->fat_length)
 	{
-		// printf("here 11 %d\n", i);
 		return 0;
 	}
 	
-	// printf("here EOChain %d\n", EOChain);
 	fat_put(i, EOChain);
 
-	// printf("here 33 ??\n");
 	if (clst == 0)
 	{
-		// printf("here 44 ??\n");
 		return i;
 
 	}
 
 	while(fat_get(clst) != EOChain)
 	{
-		// printf("before fat_fs->fat[clst] :: %d\n", clst);
-		// printf("here 55 ??\n");
 		clst = fat_get(clst);
-		// printf("after fat_fs->fat[clst] :: %d\n", clst);
 	}
-	// printf("here 66 ??\n");
 	fat_put(clst, i);
 	return i;
 	//! END
@@ -251,5 +237,12 @@ fat_get (cluster_t clst) {
 disk_sector_t
 cluster_to_sector (cluster_t clst) {
 	// TODO: Your code goes here. */
-	return fat_fs->data_start + clst;
+	return clst;
+}
+
+/* Convert a sector # to a cluster number. */
+cluster_t
+sector_to_cluster (disk_sector_t sector) {
+	// TODO: Your code goes here. */
+	return sector - fat_fs->data_start;
 }

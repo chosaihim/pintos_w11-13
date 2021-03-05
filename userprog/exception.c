@@ -155,7 +155,7 @@ page_fault (struct intr_frame *f) {
 		return;
     }
 #endif
-    exit(-1); // for project 2
+    // exit(-1); // for project 2
 
 	/* Count page faults. */
 	page_fault_cnt++;
