@@ -12,17 +12,16 @@ hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004
 Boot complete.
 Executing 'tar fs.tar /':
 /: open failed
-error writing archive
 tar: exit(1)
 Execution of 'tar' complete.
 Getting 'fs.tar' from the file system...
-Timer: 58 ticks
-Thread: 30 idle ticks, 24 kernel ticks, 4 user ticks
+Timer: 59 ticks
+Thread: 30 idle ticks, 25 kernel ticks, 4 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 137 reads, 35 writes
-hd1:0: 0 reads, 1 writes
+hd0:1: 139 reads, 41 writes
+hd1:0: 0 reads, 3 writes
 hd1:1: 0 reads, 0 writes
-Console: 908 characters output
+Console: 886 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

@@ -1,2 +1,3 @@
 FAIL
-Prerequisite test tests/filesys/extended/dir-mk-tree failed.
+Error extracting file system:
+/: open failed

@@ -89,7 +89,6 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 	#ifdef EFILESYS
 
 	cluster_t cluster = inode->data.start;
-	// printf("hello~~ my name is cluster %d\n", cluster);
 	int sector_ofs = pos / DISK_SECTOR_SIZE;
 
 	while(sector_ofs)
@@ -97,6 +96,7 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 		cluster = fat_get(cluster);
 		sector_ofs -= 1;
 	}
+	// printf("hello~~ my name is cluster %d\n", cluster);
 	return cluster_to_sector(cluster);
 
 	#else
@@ -137,7 +137,7 @@ inode_create (disk_sector_t sector, off_t length) {
 	 * one sector in size, and you should fix that. */
 	ASSERT (sizeof *disk_inode == DISK_SECTOR_SIZE);
 
-	// printf("sector number :: %d\n", sector);
+	// printf("length :: %d\n", length);
 	disk_inode = calloc (1, sizeof *disk_inode);
 	if (disk_inode != NULL) {
 		size_t sectors = bytes_to_sectors (length);
@@ -388,19 +388,62 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 	if (inode->deny_write_cnt)
 		return 0;
 
+	// printf("사이즈 :: %d\n", size);
+	// printf("bytes_written %d\n", bytes_written);
+
+	// disk_sector_t sector_idx;
+	// cluster_t tmp;
+	if (inode_length(inode) < offset + size)
+	{
+		// printf("필요한 섹터 수 :: %d\n", bytes_to_sectors (size));
+		// printf("이미 있는 섹터 수 :: %d\n", bytes_to_sectors(inode_length(inode)));
+
+		size_t sectors = bytes_to_sectors (offset + size) - bytes_to_sectors(inode_length(inode));
+		// disk_inode->magic = INODE_MAGIC;
+		// inode_create(inode->data.start, size);
+		// printf("아이노드 데이타 스타트 :: %d\n", inode->data.start);
+		if (sectors > 0)
+		{
+			static char zeros[DISK_SECTOR_SIZE];
+			cluster_t tmp;
+			for (int i = 0; i < sectors; i++)
+			{
+				tmp = fat_create_chain(inode->data.start);
+				// printf("클러스터 탬프 :: %d\n", tmp);
+				disk_write(filesys_disk, cluster_to_sector(tmp), zeros);
+			}
+		}
+		// printf("before 아이노드 사이즈 :: %d\n", inode->data.length);
+		inode->data.length = offset + size;
+		// printf("after 아이노드 사이즈 :: %d\n", inode->data.length);
+		// inode = inode_open(sector_idx);
+		disk_write(filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+	}
+	// printf("아이노드 렝스 :: %d\n", inode_length(inode));
+	// disk_read (filesys_disk, cluster_to_sector(inode->sector), &inode->data);
+
 	while (size > 0) {
+		// disk_sector_t sector_idx;
 		/* Sector to write, starting byte offset within sector. */
 		disk_sector_t sector_idx = byte_to_sector (inode, offset);
         //^ 데이터를 기록할 디스크 블록 내부의 오프셋
 		int sector_ofs = offset % DISK_SECTOR_SIZE;
 
+		// printf("섹터 인덱스 :: %d\n", sector_idx);
+		// printf("섹터 오프셋 :: %d\n", sector_ofs);
+
+
 		/* Bytes left in inode, bytes left in sector, lesser of the two. */
 		off_t inode_left = inode_length (inode) - offset;
 		int sector_left = DISK_SECTOR_SIZE - sector_ofs;
 		int min_left = inode_left < sector_left ? inode_left : sector_left;
+		// printf("아이노드 left :: %d\n", inode_left);
+		// printf("섹터 left :: %d\n", sector_left);
+		// printf("민 left :: %d\n", min_left);
 
 		/* Number of bytes to actually write into this sector. */
 		int chunk_size = size < min_left ? size : min_left;
+		// printf("청크사이즈 :: %d\n", chunk_size);
 		if (chunk_size <= 0)
 			break;
 
@@ -431,8 +474,10 @@ inode_write_at (struct inode *inode, const void *buffer_, off_t size,
 		size -= chunk_size;
 		offset += chunk_size;
 		bytes_written += chunk_size;
+		// printf("사이즈 :: %d\n", size);
 	}
 	free (bounce);
+	// printf("bytes_written %d\n", bytes_written);
 
 	return bytes_written;
 }

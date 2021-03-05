@@ -18,16 +18,20 @@ Executing 'grow-seq-lg':
 (grow-seq-lg) create "testme"
 (grow-seq-lg) open "testme"
 (grow-seq-lg) writing "testme"
-(grow-seq-lg) write 1234 bytes at offset 0 in "testme" failed: FAILED
-grow-seq-lg: exit(1)
+(grow-seq-lg) close "testme"
+(grow-seq-lg) open "testme" for verification
+(grow-seq-lg) verified contents of "testme"
+(grow-seq-lg) close "testme"
+(grow-seq-lg) end
+grow-seq-lg: exit(0)
 Execution of 'grow-seq-lg' complete.
-Timer: 67 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 6 user ticks
+Timer: 225 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 164 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 153 reads, 517 writes
+hd0:1: 419 reads, 922 writes
 hd1:0: 223 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1151 characters output
+Console: 1249 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

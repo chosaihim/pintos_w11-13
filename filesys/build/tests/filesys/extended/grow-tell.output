@@ -18,16 +18,20 @@ Executing 'grow-tell':
 (grow-tell) create "foobar"
 (grow-tell) open "foobar"
 (grow-tell) writing "foobar"
-(grow-tell) write 37 bytes at offset 0 in "foobar" failed: FAILED
-grow-tell: exit(1)
+(grow-tell) close "foobar"
+(grow-tell) open "foobar" for verification
+(grow-tell) verified contents of "foobar"
+(grow-tell) close "foobar"
+(grow-tell) end
+grow-tell: exit(0)
 Execution of 'grow-tell' complete.
-Timer: 65 ticks
-Thread: 30 idle ticks, 32 kernel ticks, 3 user ticks
+Timer: 72 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 11 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 153 reads, 519 writes
+hd0:1: 225 reads, 644 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1127 characters output
+Console: 1217 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

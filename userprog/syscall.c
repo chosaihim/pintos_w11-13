@@ -117,7 +117,7 @@ syscall_handler (struct intr_frame *f UNUSED) {
             seek(f->R.rdi,f->R.rsi);
             break;
         case SYS_TELL:
-            tell(f->R.rdi);
+            f->R.rax = tell(f->R.rdi);
             break;
         case SYS_CLOSE:
             close(f->R.rdi);

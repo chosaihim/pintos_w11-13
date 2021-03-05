@@ -22,16 +22,24 @@ Executing 'syn-rw':
 (syn-rw) exec child 2 of 4: "child-syn-rw 1"
 (syn-rw) exec child 3 of 4: "child-syn-rw 2"
 (syn-rw) exec child 4 of 4: "child-syn-rw 3"
-(syn-rw) write 8 bytes at offset 0 in "logfile": FAILED
-syn-rw: exit(1)
+child-syn-rw: exit(3)
+child-syn-rw: exit(2)
+child-syn-rw: exit(1)
+child-syn-rw: exit(0)
+(syn-rw) wait for child 1 of 4 returned 0 (expected 0)
+(syn-rw) wait for child 2 of 4 returned 1 (expected 1)
+(syn-rw) wait for child 3 of 4 returned 2 (expected 2)
+(syn-rw) wait for child 4 of 4 returned 3 (expected 3)
+(syn-rw) end
+syn-rw: exit(0)
 Execution of 'syn-rw' complete.
-Timer: 277 ticks
-Thread: 30 idle ticks, 37 kernel ticks, 210 user ticks
+Timer: 323 ticks
+Thread: 30 idle ticks, 34 kernel ticks, 259 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 415 reads, 757 writes
+hd0:1: 967 reads, 1789 writes
 hd1:0: 343 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1310 characters output
+Console: 1576 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

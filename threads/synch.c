@@ -205,7 +205,7 @@ lock_acquire (struct lock *lock) {
         
         curr ->wait_on_lock = lock;
         /* 궁금증 : 이렇게 세팅 시 항상 pop_front 하면 가장 높은 녀석인가 ? */
-        // if(>lock->holder->priority)
+        // if(lock->holder->priority)
         // list_insert_ordered(&(lock->holder->donations),&curr->donation_elem, cmp_priority, NULL);
             list_push_back(&(lock->holder->donations),&curr->donation_elem);
         /* Let's donate !!! */

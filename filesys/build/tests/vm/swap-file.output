@@ -20,13 +20,13 @@ Executing 'swap-file':
 (swap-file) end
 swap-file: exit(0)
 Execution of 'swap-file' complete.
-Timer: 1187 ticks
-Thread: 30 idle ticks, 888 kernel ticks, 270 user ticks
+Timer: 845 ticks
+Thread: 30 idle ticks, 540 kernel ticks, 275 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 8090 reads, 16181 writes
 hd1:0: 7931 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1072 characters output
+Console: 1071 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

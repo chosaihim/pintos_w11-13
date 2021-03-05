@@ -18,16 +18,20 @@ Executing 'grow-seq-sm':
 (grow-seq-sm) create "testme"
 (grow-seq-sm) open "testme"
 (grow-seq-sm) writing "testme"
-(grow-seq-sm) write 1234 bytes at offset 0 in "testme" failed: FAILED
-grow-seq-sm: exit(1)
+(grow-seq-sm) close "testme"
+(grow-seq-sm) open "testme" for verification
+(grow-seq-sm) verified contents of "testme"
+(grow-seq-sm) close "testme"
+(grow-seq-sm) end
+grow-seq-sm: exit(0)
 Execution of 'grow-seq-sm' complete.
-Timer: 66 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 5 user ticks
+Timer: 76 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 15 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 153 reads, 517 writes
+hd0:1: 179 reads, 550 writes
 hd1:0: 223 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1151 characters output
+Console: 1247 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

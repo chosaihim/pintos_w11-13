@@ -19,8 +19,8 @@ Executing 'dir-rm-cwd':
 (dir-rm-cwd) open "/": FAILED
 dir-rm-cwd: exit(1)
 Execution of 'dir-rm-cwd' complete.
-Timer: 64 ticks
-Thread: 30 idle ticks, 32 kernel ticks, 2 user ticks
+Timer: 63 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 2 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 149 reads, 531 writes
 hd1:0: 231 reads, 0 writes

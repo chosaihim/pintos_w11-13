@@ -21,13 +21,13 @@ child-linear: exit(66)
 child-linear: exit(66)
 (page-parallel) wait for child 2
 child-linear: exit(66)
-(page-parallel) wait for child 3
 child-linear: exit(66)
+(page-parallel) wait for child 3
 (page-parallel) end
 page-parallel: exit(0)
 Execution of 'page-parallel' complete.
-Timer: 178 ticks
-Thread: 30 idle ticks, 39 kernel ticks, 110 user ticks
+Timer: 177 ticks
+Thread: 29 idle ticks, 41 kernel ticks, 107 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 377 reads, 737 writes
 hd1:0: 209 reads, 0 writes

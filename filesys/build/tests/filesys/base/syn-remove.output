@@ -24,8 +24,8 @@ Executing 'syn-remove':
 (syn-remove) end
 syn-remove: exit(0)
 Execution of 'syn-remove' complete.
-Timer: 67 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 6 user ticks
+Timer: 68 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 7 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 260 reads, 546 writes
 hd1:0: 109 reads, 0 writes

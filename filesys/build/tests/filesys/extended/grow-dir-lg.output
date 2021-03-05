@@ -31,16 +31,51 @@ Executing 'grow-dir-lg':
 (grow-dir-lg) creating and checking "/x/file12"
 (grow-dir-lg) creating and checking "/x/file13"
 (grow-dir-lg) creating and checking "/x/file14"
-(grow-dir-lg) create "/x/file14": FAILED
-grow-dir-lg: exit(1)
+(grow-dir-lg) creating and checking "/x/file15"
+(grow-dir-lg) creating and checking "/x/file16"
+(grow-dir-lg) creating and checking "/x/file17"
+(grow-dir-lg) creating and checking "/x/file18"
+(grow-dir-lg) creating and checking "/x/file19"
+(grow-dir-lg) creating and checking "/x/file20"
+(grow-dir-lg) creating and checking "/x/file21"
+(grow-dir-lg) creating and checking "/x/file22"
+(grow-dir-lg) creating and checking "/x/file23"
+(grow-dir-lg) creating and checking "/x/file24"
+(grow-dir-lg) creating and checking "/x/file25"
+(grow-dir-lg) creating and checking "/x/file26"
+(grow-dir-lg) creating and checking "/x/file27"
+(grow-dir-lg) creating and checking "/x/file28"
+(grow-dir-lg) creating and checking "/x/file29"
+(grow-dir-lg) creating and checking "/x/file30"
+(grow-dir-lg) creating and checking "/x/file31"
+(grow-dir-lg) creating and checking "/x/file32"
+(grow-dir-lg) creating and checking "/x/file33"
+(grow-dir-lg) creating and checking "/x/file34"
+(grow-dir-lg) creating and checking "/x/file35"
+(grow-dir-lg) creating and checking "/x/file36"
+(grow-dir-lg) creating and checking "/x/file37"
+(grow-dir-lg) creating and checking "/x/file38"
+(grow-dir-lg) creating and checking "/x/file39"
+(grow-dir-lg) creating and checking "/x/file40"
+(grow-dir-lg) creating and checking "/x/file41"
+(grow-dir-lg) creating and checking "/x/file42"
+(grow-dir-lg) creating and checking "/x/file43"
+(grow-dir-lg) creating and checking "/x/file44"
+(grow-dir-lg) creating and checking "/x/file45"
+(grow-dir-lg) creating and checking "/x/file46"
+(grow-dir-lg) creating and checking "/x/file47"
+(grow-dir-lg) creating and checking "/x/file48"
+(grow-dir-lg) creating and checking "/x/file49"
+(grow-dir-lg) end
+grow-dir-lg: exit(0)
 Execution of 'grow-dir-lg' complete.
-Timer: 99 ticks
-Thread: 30 idle ticks, 31 kernel ticks, 39 user ticks
+Timer: 277 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 216 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 881 reads, 575 writes
+hd0:1: 6106 reads, 757 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1767 characters output
+Console: 3427 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

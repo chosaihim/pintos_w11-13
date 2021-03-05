@@ -16,16 +16,19 @@ Putting 'tar' into the file system...
 Executing 'dir-rm-tree':
 (dir-rm-tree) begin
 (dir-rm-tree) creating /0/0/0/0 through /3/2/2/3...
-(dir-rm-tree) create "/0/1/0/2": FAILED
+(dir-rm-tree) open "/0/2/0/3"
+(dir-rm-tree) close "/0/2/0/3"
+(dir-rm-tree) removing /0/0/0/0 through /3/2/2/3...
+(dir-rm-tree) remove "/0/0/0": FAILED
 dir-rm-tree: exit(1)
 Execution of 'dir-rm-tree' complete.
-Timer: 76 ticks
-Thread: 30 idle ticks, 32 kernel ticks, 14 user ticks
+Timer: 646 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 585 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 549 reads, 562 writes
+hd0:1: 22576 reads, 964 writes
 hd1:0: 232 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1085 characters output
+Console: 1200 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

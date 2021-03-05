@@ -1,2 +1,1 @@
-FAIL
-run: write 8 bytes at offset 0 in "logfile": FAILED
+PASS

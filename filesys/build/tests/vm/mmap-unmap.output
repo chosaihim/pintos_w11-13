@@ -21,7 +21,7 @@ Executing 'mmap-unmap':
 (mmap-unmap) memory is readable 540888381
 mmap-unmap: exit(-1)
 Execution of 'mmap-unmap' complete.
-Timer: 64 ticks
+Timer: 63 ticks
 Thread: 30 idle ticks, 31 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 259 reads, 537 writes

@@ -18,16 +18,20 @@ Executing 'grow-file-size':
 (grow-file-size) create "testfile"
 (grow-file-size) open "testfile"
 (grow-file-size) writing "testfile"
-(grow-file-size) write 37 bytes at offset 0 in "testfile" failed: FAILED
-grow-file-size: exit(1)
+(grow-file-size) close "testfile"
+(grow-file-size) open "testfile" for verification
+(grow-file-size) verified contents of "testfile"
+(grow-file-size) close "testfile"
+(grow-file-size) end
+grow-file-size: exit(0)
 Execution of 'grow-file-size' complete.
-Timer: 64 ticks
-Thread: 30 idle ticks, 30 kernel ticks, 4 user ticks
+Timer: 72 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 11 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 153 reads, 519 writes
+hd0:1: 225 reads, 644 writes
 hd1:0: 224 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1190 characters output
+Console: 1306 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...
