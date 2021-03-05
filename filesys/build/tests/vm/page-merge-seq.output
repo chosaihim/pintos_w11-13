@@ -13,9 +13,86 @@ Formatting file system...done.
 Boot complete.
 Putting 'page-merge-seq' into the file system...
 Putting 'child-sort' into the file system...
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x800421c8bf 0x80042068d3 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+Executing 'page-merge-seq':
+(page-merge-seq) begin
+(page-merge-seq) init
+(page-merge-seq) sort chunk 0
+(page-merge-seq) child[0] exec
+child-sort: exit(123)
+(page-merge-seq) child[0] wait success
+(page-merge-seq) sort chunk 1
+(page-merge-seq) child[1] exec
+child-sort: exit(123)
+(page-merge-seq) child[1] wait success
+(page-merge-seq) sort chunk 2
+(page-merge-seq) child[2] exec
+child-sort: exit(123)
+(page-merge-seq) child[2] wait success
+(page-merge-seq) sort chunk 3
+(page-merge-seq) child[3] exec
+child-sort: exit(123)
+(page-merge-seq) child[3] wait success
+(page-merge-seq) sort chunk 4
+(page-merge-seq) child[4] exec
+child-sort: exit(123)
+(page-merge-seq) child[4] wait success
+(page-merge-seq) sort chunk 5
+(page-merge-seq) child[5] exec
+child-sort: exit(123)
+(page-merge-seq) child[5] wait success
+(page-merge-seq) sort chunk 6
+(page-merge-seq) child[6] exec
+child-sort: exit(123)
+(page-merge-seq) child[6] wait success
+(page-merge-seq) sort chunk 7
+(page-merge-seq) child[7] exec
+child-sort: exit(123)
+(page-merge-seq) child[7] wait success
+(page-merge-seq) sort chunk 8
+(page-merge-seq) child[8] exec
+child-sort: exit(123)
+(page-merge-seq) child[8] wait success
+(page-merge-seq) sort chunk 9
+(page-merge-seq) child[9] exec
+child-sort: exit(123)
+(page-merge-seq) child[9] wait success
+(page-merge-seq) sort chunk 10
+(page-merge-seq) child[10] exec
+child-sort: exit(123)
+(page-merge-seq) child[10] wait success
+(page-merge-seq) sort chunk 11
+(page-merge-seq) child[11] exec
+child-sort: exit(123)
+(page-merge-seq) child[11] wait success
+(page-merge-seq) sort chunk 12
+(page-merge-seq) child[12] exec
+child-sort: exit(123)
+(page-merge-seq) child[12] wait success
+(page-merge-seq) sort chunk 13
+(page-merge-seq) child[13] exec
+child-sort: exit(123)
+(page-merge-seq) child[13] wait success
+(page-merge-seq) sort chunk 14
+(page-merge-seq) child[14] exec
+child-sort: exit(123)
+(page-merge-seq) child[14] wait success
+(page-merge-seq) sort chunk 15
+(page-merge-seq) child[15] exec
+child-sort: exit(123)
+(page-merge-seq) child[15] wait success
+(page-merge-seq) merge
+(page-merge-seq) verify
+(page-merge-seq) success, buf_idx=1,032,192
+(page-merge-seq) end
+page-merge-seq: exit(0)
+Execution of 'page-merge-seq' complete.
+Timer: 5627 ticks
+Thread: 30 idle ticks, 66 kernel ticks, 5532 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 5045 reads, 4911 writes
+hd1:0: 216 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 3139 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

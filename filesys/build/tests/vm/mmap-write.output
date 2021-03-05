@@ -15,9 +15,19 @@ Putting 'mmap-write' into the file system...
 Executing 'mmap-write':
 (mmap-write) begin
 (mmap-write) create "sample.txt"
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x8004219521 0x80042190bb 0x8004218e95 0x40013c 0x400dce 0x400e17.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+(mmap-write) open "sample.txt"
+(mmap-write) mmap "sample.txt"
+(mmap-write) compare read data against written data
+(mmap-write) end
+mmap-write: exit(0)
+Execution of 'mmap-write' complete.
+Timer: 65 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 5 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 266 reads, 539 writes
+hd1:0: 107 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1103 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

@@ -15,9 +15,22 @@ Putting 'lg-seq-random' into the file system...
 Executing 'lg-seq-random':
 (lg-seq-random) begin
 (lg-seq-random) create "nibble"
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x8004219521 0x80042190bb 0x8004218e95 0x400c46 0x400174 0x400e5d 0x400ea6.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+(lg-seq-random) open "nibble"
+(lg-seq-random) writing "nibble"
+(lg-seq-random) close "nibble"
+(lg-seq-random) open "nibble" for verification
+(lg-seq-random) verified contents of "nibble"
+(lg-seq-random) close "nibble"
+(lg-seq-random) end
+lg-seq-random: exit(0)
+Execution of 'lg-seq-random' complete.
+Timer: 231 ticks
+Thread: 29 idle ticks, 32 kernel ticks, 170 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 651 reads, 967 writes
+hd1:0: 107 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1233 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

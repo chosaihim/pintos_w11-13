@@ -172,7 +172,7 @@ cluster_t
 fat_create_chain (cluster_t clst) {
 	// TODO: Your code goes here. */
 	//! ADD
-	cluster_t i = fat_fs->data_start;
+	cluster_t i = 2;
 	while (fat_get(i) != 0 && i < fat_fs->fat_length)
 	{
 		++i;
@@ -237,7 +237,7 @@ fat_get (cluster_t clst) {
 disk_sector_t
 cluster_to_sector (cluster_t clst) {
 	// TODO: Your code goes here. */
-	return clst;
+	return fat_fs->data_start + clst;
 }
 
 /* Convert a sector # to a cluster number. */

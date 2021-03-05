@@ -15,9 +15,22 @@ Putting 'syn-remove' into the file system...
 Executing 'syn-remove':
 (syn-remove) begin
 (syn-remove) create "deleteme"
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x8004219521 0x80042190bb 0x8004218e95 0x400138 0x40108f 0x4010d8.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+(syn-remove) open "deleteme"
+(syn-remove) remove "deleteme"
+(syn-remove) write "deleteme"
+(syn-remove) seek "deleteme" to 0
+(syn-remove) read "deleteme"
+(syn-remove) close "deleteme"
+(syn-remove) end
+syn-remove: exit(0)
+Execution of 'syn-remove' complete.
+Timer: 67 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 6 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 260 reads, 546 writes
+hd1:0: 109 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1170 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

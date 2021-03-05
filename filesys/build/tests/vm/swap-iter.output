@@ -12,9 +12,41 @@ hd1:1: detected 100,800 sector (49 MB) disk, model "QEMU HARDDISK", serial "QM00
 Formatting file system...done.
 Boot complete.
 Putting 'swap-iter' into the file system...
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f622 0x800421c20d 0x800421b008 0x800421c9c4 0x80042068d3 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+Putting 'large.txt' into the file system...
+Executing 'swap-iter':
+(swap-iter) begin
+(swap-iter) write sparsely over page 0
+(swap-iter) write sparsely over page 512
+(swap-iter) write sparsely over page 1024
+(swap-iter) write sparsely over page 1536
+(swap-iter) write sparsely over page 2048
+(swap-iter) write sparsely over page 2560
+(swap-iter) write sparsely over page 3072
+(swap-iter) write sparsely over page 3584
+(swap-iter) write sparsely over page 4096
+(swap-iter) write sparsely over page 4608
+(swap-iter) open "large.txt"
+(swap-iter) mmap "large.txt"
+(swap-iter) check consistency in page 0
+(swap-iter) check consistency in page 512
+(swap-iter) check consistency in page 1024
+(swap-iter) check consistency in page 1536
+(swap-iter) check consistency in page 2048
+(swap-iter) check consistency in page 2560
+(swap-iter) check consistency in page 3072
+(swap-iter) check consistency in page 3584
+(swap-iter) check consistency in page 4096
+(swap-iter) check consistency in page 4608
+(swap-iter) end
+swap-iter: exit(0)
+Execution of 'swap-iter' complete.
+Timer: 3031 ticks
+Thread: 30 idle ticks, 887 kernel ticks, 2114 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 12003 reads, 16183 writes
+hd1:0: 7932 reads, 0 writes
+hd1:1: 44928 reads, 84064 writes
+Console: 1926 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

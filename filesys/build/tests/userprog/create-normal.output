@@ -15,16 +15,16 @@ Putting 'create-normal' into the file system...
 Executing 'create-normal':
 (create-normal) begin
 (create-normal) create quux.dat
-(create-normal) create quux.dat: FAILED
-create-normal: exit(1)
+(create-normal) end
+create-normal: exit(0)
 Execution of 'create-normal' complete.
-Timer: 71 ticks
-Thread: 30 idle ticks, 39 kernel ticks, 2 user ticks
+Timer: 63 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 228 reads, 526 writes
+hd0:1: 247 reads, 527 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1032 characters output
+Console: 1012 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

@@ -13,9 +13,27 @@ Formatting file system...done.
 Boot complete.
 Putting 'mmap-exit' into the file system...
 Putting 'child-mm-wrt' into the file system...
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x800421c8bf 0x80042068d3 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+Executing 'mmap-exit':
+(mmap-exit) begin
+(child-mm-wrt) begin
+(child-mm-wrt) create "sample.txt"
+(child-mm-wrt) open "sample.txt"
+(child-mm-wrt) mmap "sample.txt"
+(child-mm-wrt) end
+child-mm-wrt: exit(0)
+(mmap-exit) open "sample.txt" for verification
+(mmap-exit) verified contents of "sample.txt"
+(mmap-exit) close "sample.txt"
+(mmap-exit) end
+mmap-exit: exit(0)
+Execution of 'mmap-exit' complete.
+Timer: 71 ticks
+Thread: 30 idle ticks, 34 kernel ticks, 7 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 352 reads, 745 writes
+hd1:0: 210 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1300 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

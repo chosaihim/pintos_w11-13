@@ -15,9 +15,19 @@ Putting 'sm-create' into the file system...
 Executing 'sm-create':
 (sm-create) begin
 (sm-create) create "blargle"
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x8004219521 0x80042190bb 0x8004218e95 0x400138 0x400e6c 0x400eb5.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+(sm-create) open "blargle" for verification
+(sm-create) verified contents of "blargle"
+(sm-create) close "blargle"
+(sm-create) end
+sm-create: exit(0)
+Execution of 'sm-create' complete.
+Timer: 69 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 8 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 264 reads, 547 writes
+hd1:0: 107 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1092 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

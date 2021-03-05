@@ -15,16 +15,17 @@ Putting 'mmap-zero' into the file system...
 Executing 'mmap-zero':
 (mmap-zero) begin
 (mmap-zero) create empty file "empty"
-(mmap-zero) create empty file "empty": FAILED
-mmap-zero: exit(1)
+(mmap-zero) open "empty"
+(mmap-zero) mmap "empty"
+mmap-zero: exit(-1)
 Execution of 'mmap-zero' complete.
-Timer: 70 ticks
-Thread: 30 idle ticks, 37 kernel ticks, 3 user ticks
+Timer: 63 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 3 user ticks
 hd0:0: 0 reads, 0 writes
-hd0:1: 228 reads, 526 writes
+hd0:1: 251 reads, 527 writes
 hd1:0: 103 reads, 0 writes
 hd1:1: 0 reads, 0 writes
-Console: 1016 characters output
+Console: 1021 characters output
 Keyboard: 0 keys pressed
 Exception: 0 page faults
 Powering off...

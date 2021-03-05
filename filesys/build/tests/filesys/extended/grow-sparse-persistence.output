@@ -11,10 +11,18 @@ hd1:0: detected 2,048 sector (1024 kB) disk, model "QEMU HARDDISK", serial "QM00
 hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004"
 Boot complete.
 Executing 'tar fs.tar /':
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b67f 0x8004219d9a 0x80042180a6 0x8004217803 0x8004217374 0x80042077b2.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
-bad signature on scratch disk
+/: open failed
+error writing archive
+tar: exit(1)
+Execution of 'tar' complete.
+Getting 'fs.tar' from the file system...
+Timer: 58 ticks
+Thread: 30 idle ticks, 25 kernel ticks, 3 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 137 reads, 35 writes
+hd1:0: 0 reads, 1 writes
+hd1:1: 0 reads, 0 writes
+Console: 908 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

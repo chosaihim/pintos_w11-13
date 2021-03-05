@@ -12,9 +12,20 @@ hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004
 Formatting file system...done.
 Boot complete.
 Putting 'dir-rm-cwd' into the file system...
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f622 0x800421c20d 0x800421b008 0x800421c9c4 0x80042068d3 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+Putting 'tar' into the file system...
+Executing 'dir-rm-cwd':
+(dir-rm-cwd) begin
+(dir-rm-cwd) open "/"
+(dir-rm-cwd) open "/": FAILED
+dir-rm-cwd: exit(1)
+Execution of 'dir-rm-cwd' complete.
+Timer: 64 ticks
+Thread: 30 idle ticks, 32 kernel ticks, 2 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 149 reads, 531 writes
+hd1:0: 231 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1037 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

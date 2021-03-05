@@ -15,9 +15,18 @@ Putting 'mmap-zero-len' into the file system...
 Executing 'mmap-zero-len':
 (mmap-zero-len) begin
 (mmap-zero-len) create "sample.txt"
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x8004219521 0x80042190bb 0x8004218e95 0x400139 0x400ccd 0x400d16.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+(mmap-zero-len) open "sample.txt"
+(mmap-zero-len) try to mmap zero length
+(mmap-zero-len) end
+mmap-zero-len: exit(0)
+Execution of 'mmap-zero-len' complete.
+Timer: 63 ticks
+Thread: 30 idle ticks, 30 kernel ticks, 4 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 260 reads, 535 writes
+hd1:0: 106 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1090 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

@@ -12,9 +12,33 @@ hd1:1: detected 8,064 sector (3 MB) disk, model "QEMU HARDDISK", serial "QM00004
 Formatting file system...done.
 Boot complete.
 Putting 'mmap-off' into the file system...
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f622 0x800421c20d 0x800421b008 0x800421c9c4 0x80042068d3 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+Putting 'large.txt' into the file system...
+Executing 'mmap-off':
+(mmap-off) begin
+(mmap-off) open "large.txt"
+(mmap-off) try to mmap with offset 0x1000
+(mmap-off) validate mmap.
+(mmap-off) validated.
+(mmap-off) write to mmap
+(mmap-off) validate contents.
+(mmap-off) open "large.txt"
+(mmap-off) read "large.txt" Page 0
+(mmap-off) validate page 0.
+(mmap-off) validated.
+(mmap-off) read "large.txt" Page 1
+(mmap-off) validate page 1.
+(mmap-off) validated.
+(mmap-off) success
+(mmap-off) end
+mmap-off: exit(0)
+Execution of 'mmap-off' complete.
+Timer: 933 ticks
+Thread: 30 idle ticks, 888 kernel ticks, 15 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 309 reads, 16193 writes
+hd1:0: 7933 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1395 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...

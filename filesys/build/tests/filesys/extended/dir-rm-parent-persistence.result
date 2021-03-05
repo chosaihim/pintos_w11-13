@@ -1,2 +1,4 @@
 FAIL
-Prerequisite test tests/filesys/extended/dir-rm-parent failed.
+Error extracting file system:
+/: open failed
+error writing archive

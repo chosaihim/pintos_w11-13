@@ -88,16 +88,16 @@ byte_to_sector (const struct inode *inode, off_t pos) {
 
 	#ifdef EFILESYS
 
-	disk_sector_t sector = inode->data.start;
-	// printf("hello~~ my name is sector %d\n", sector);
+	cluster_t cluster = inode->data.start;
+	// printf("hello~~ my name is cluster %d\n", cluster);
 	int sector_ofs = pos / DISK_SECTOR_SIZE;
 
 	while(sector_ofs)
 	{
-		sector = fat_get(sector);
+		cluster = fat_get(cluster);
 		sector_ofs -= 1;
 	}
-	return sector;
+	return cluster_to_sector(cluster);
 
 	#else
 
@@ -146,11 +146,12 @@ inode_create (disk_sector_t sector, off_t length) {
 		//! 섹터로 바꿔서 들어왔음
 		// cluster_t cluster = sector_to_cluster(sector);
 		cluster_t cluster = fat_create_chain(0);
-		printf("아이노드 크리에이트 넘버 :: %d\n", cluster);
+		// printf("아이노드 크리에이트 넘버 :: %d\n", cluster);
+		// printf("아이노드 크리에이트 섹터넘버 :: %d\n", sector);
 		if(cluster)
 		{
 			disk_inode->start = cluster;
-			disk_write (filesys_disk, sector, disk_inode);
+			disk_write (filesys_disk, cluster_to_sector(sector), disk_inode);
 
 			if (sectors > 0) {
 				static char zeros[DISK_SECTOR_SIZE];
@@ -158,12 +159,12 @@ inode_create (disk_sector_t sector, off_t length) {
 
 				// cluster_t cluster = sector_to_cluster(sector);
 				// cluster_t next;
-				disk_write (filesys_disk, cluster, zeros);
+				disk_write (filesys_disk, cluster_to_sector(disk_inode->start), zeros);
 				for (i = 1; i < sectors; i++){
 
 					// printf("아이노드 크리에이트 !! %d\n", i);
-					cluster_t tmp = fat_create_chain(cluster);
-					printf("여기는 tmp :: %d\n", tmp);
+					cluster_t tmp = cluster_to_sector(fat_create_chain(cluster));
+					// printf("여기는 tmp :: %d\n", tmp);
 					disk_write (filesys_disk, tmp, zeros);
 
 				}
@@ -240,9 +241,9 @@ inode_open (disk_sector_t sector) {
 
 	// inode->data.start = sector;
 
-	// printf("inode_sector :: %d\n", inode->sector);
-	printf("오픈 섹터 넘버 :: %d\n", sector);
-	disk_read (filesys_disk, inode->sector, &inode->data);
+	// printf("%%%%%%%%%%%%%% inode_sector :: %d\n", inode->sector);
+	// printf("오픈 섹터 넘버 :: %d\n", sector);
+	disk_read (filesys_disk, cluster_to_sector(inode->sector), &inode->data);
 	//! ADD
 	// printf("=========== inode_data start :: %d\n", inode->data.start);
 	return inode;

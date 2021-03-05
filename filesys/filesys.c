@@ -65,14 +65,14 @@ filesys_create (const char *name, off_t initial_size) {
 	
 	struct dir *dir = dir_open_root ();
     // printf("hello??\n\n");
-	disk_sector_t inode_sector = fat_create_chain(0);
+	cluster_t inode_cluster = fat_create_chain(0);
 	// printf("inode_cluster :; %d\n", inode_cluster);
 	// disk_sector_t inode_sector = cluster_to_sector(inode_cluster);
 	success = (dir != NULL
-			&& inode_create (inode_sector, initial_size)
-			&& dir_add (dir, name, inode_sector));
-	if (!success && inode_sector != 0)
-		fat_remove_chain (inode_sector, 0);
+			&& inode_create (inode_cluster, initial_size)
+			&& dir_add (dir, name, inode_cluster));
+	if (!success && inode_cluster != 0)
+		fat_remove_chain (inode_cluster, 0);
 	dir_close (dir);
 	// printf("success : %d\n", success);
 	return success;

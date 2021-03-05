@@ -13,9 +13,20 @@ Formatting file system...done.
 Boot complete.
 Putting 'mmap-null' into the file system...
 Putting 'sample.txt' into the file system...
-Kernel PANIC at ../../devices/disk.c:411 in select_sector(): assertion `sec_no < d->capacity' failed.
-Call stack: 0x8004213cf3 0x800420fec1 0x800420f475 0x800421c070 0x800421b5af 0x800421b7ac 0x8004219cfa 0x800421c8bf 0x80042068d3 0x8004206186.
-The `backtrace' program can make call stacks useful.
-Read "Backtraces" in the "Debugging Tools" chapter
-of the Pintos documentation for more information.
-Kernel PANIC recursion at ../../threads/synch.c:201 in lock_acquire().
+Executing 'mmap-null':
+(mmap-null) begin
+(mmap-null) open "sample.txt"
+(mmap-null) try to mmap at address 0
+(mmap-null) end
+mmap-null: exit(0)
+Execution of 'mmap-null' complete.
+Timer: 63 ticks
+Thread: 30 idle ticks, 31 kernel ticks, 2 user ticks
+hd0:0: 0 reads, 0 writes
+hd0:1: 256 reads, 531 writes
+hd1:0: 106 reads, 0 writes
+hd1:1: 0 reads, 0 writes
+Console: 1075 characters output
+Keyboard: 0 keys pressed
+Exception: 0 page faults
+Powering off...
