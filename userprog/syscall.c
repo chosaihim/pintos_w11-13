@@ -129,6 +129,10 @@ syscall_handler (struct intr_frame *f UNUSED) {
         case SYS_MUNMAP:
             munmap(f->R.rdi);
             break;
+        //! for project 4
+        case SYS_ISDIR:
+            f->R.rax = is_dir(f->R.rdi);
+            break;
     }
 	// thread_exit ();
 }
@@ -337,3 +341,12 @@ void munmap (void *addr)
     do_munmap(addr);
 }
 //!END Memory Mapped Files
+
+bool is_dir(int fd)
+{
+    struct file *target = process_get_file(fd);
+    if(target == NULL)
+        return false;
+
+    return inode_is_dir(target->inode);
+}

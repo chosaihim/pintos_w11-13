@@ -6,11 +6,11 @@
 #include "filesys/inode.h"
 #include "threads/malloc.h"
 
-/* A directory. */
-struct dir {
-	struct inode *inode;                /* Backing store. */
-	off_t pos;                          /* Current position. */
-};
+// /* A directory. */
+// struct dir {
+// 	struct inode *inode;                /* Backing store. */
+// 	off_t pos;                          /* Current position. */
+// };
 
 /* A single directory entry. */
 struct dir_entry {
@@ -23,7 +23,8 @@ struct dir_entry {
  * given SECTOR.  Returns true if successful, false on failure. */
 bool
 dir_create (disk_sector_t sector, size_t entry_cnt) {
-	return inode_create (sector, entry_cnt * sizeof (struct dir_entry));
+    //! ADD : is_dir 인자 추가
+	return inode_create (sector, entry_cnt * sizeof (struct dir_entry), 1);
 }
 
 /* Opens and returns the directory for the given INODE, of which

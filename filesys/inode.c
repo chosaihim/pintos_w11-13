@@ -21,9 +21,16 @@ struct inode_disk {
 	disk_sector_t start;                /* First data sector. */
 	off_t length;                       /* File size in bytes. */
 	unsigned magic;                     /* Magic number. */
-    //! 제거
-	uint32_t unused[125];               /* Not used. */
     //! ADD
+
+    uint32_t is_dir;    /* 디렉토리 구분 */
+
+    //! END
+
+    //^ 멤버 추가시마다 512바이트 맞추기
+	uint32_t unused[124];               /* Not used. */
+    //! ADD
+
     // disk_sector_t direct_map_table[DIRECT_BLOCK_ENTRIES];
     // disk_sector_t indirect_block_sec;
     // disk_sector_t double_indirect_block_sec;
@@ -125,7 +132,7 @@ inode_init (void) {
  * Returns true if successful.
  * Returns false if memory or disk allocation fails. */
 bool
-inode_create (disk_sector_t sector, off_t length) {
+inode_create (disk_sector_t sector, off_t length, uint32_t is_dir) {
 	#ifdef EFILESYS
 
 	struct inode_disk *disk_inode = NULL;
@@ -143,8 +150,11 @@ inode_create (disk_sector_t sector, off_t length) {
 		size_t sectors = bytes_to_sectors (length);
 		disk_inode->length = length;
 		disk_inode->magic = INODE_MAGIC;
+
+        //! 디렉토리 여부 추가
+        disk_inode->is_dir = is_dir;
+		
 		//! 섹터로 바꿔서 들어왔음
-		// cluster_t cluster = sector_to_cluster(sector);
 		cluster_t cluster = fat_create_chain(0);
 		// printf("아이노드 크리에이트 넘버 :: %d\n", cluster);
 		// printf("아이노드 크리에이트 섹터넘버 :: %d\n", sector);
@@ -505,4 +515,18 @@ inode_allow_write (struct inode *inode) {
 off_t
 inode_length (const struct inode *inode) {
 	return inode->data.length;
+}
+
+//! ADD
+bool inode_is_dir(const struct inode* inode) {
+    bool result;
+    /* inode_disk자료구조를메모리에할당*/
+    struct inode_disk *disk_inode = calloc (1, sizeof *disk_inode);
+    /* in-memory inode의on-disk inode를읽어inode_disk에저장*/
+    disk_read(filesys_disk, cluster_to_sector(inode->sector), disk_inode);
+    /* on-disk inode의is_dir을result에저장하여반환*/
+    result = disk_inode->is_dir;
+    free(disk_inode);
+    
+    return result;
 }

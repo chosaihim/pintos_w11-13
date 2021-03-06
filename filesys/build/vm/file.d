@@ -8,5 +8,7 @@ vm/file.o: ../../vm/file.c ../../include/vm/vm.h \
  ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
  ../../include/filesys/page_cache.h ../../include/threads/synch.h \
  ../../include/lib/kernel/list.h ../../include/threads/thread.h \
- ../../include/threads/interrupt.h ../../include/userprog/process.h \
- ../../include/threads/mmu.h ../../include/threads/pte.h
+ ../../include/threads/interrupt.h ../../include/filesys/directory.h \
+ ../../include/devices/disk.h ../../include/lib/inttypes.h \
+ ../../include/userprog/process.h ../../include/threads/mmu.h \
+ ../../include/threads/pte.h

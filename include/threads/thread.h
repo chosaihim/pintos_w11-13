@@ -8,7 +8,10 @@
 #include "threads/synch.h" /* add for semaphore */
 #ifdef VM
 #include "vm/vm.h"
+#include "filesys/directory.h"
 #endif
+
+
 
 
 /* States in a thread's life cycle. */
@@ -140,6 +143,9 @@ struct thread {
 	struct supplemental_page_table spt; //! vm is in spt
 	void* rsp_stack;		//! stack grow 할 때 사용
     void* stack_bottom;
+
+    //! ADD : 디렉토리 추가
+    struct dir* cur_dir;
 #endif
 
 	/* Owned by thread.c. */

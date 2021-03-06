@@ -365,6 +365,12 @@ process_exit (void) {
 	/* 순서 주의 */
 	process_cleanup (); /* pml4 를 끝낸다. */
 	sema_up(&curr->sema_exit);
+
+    #ifdef EFILESYS
+
+    dir_close(thread_current()->cur_dir); //! ADD : open_cnt가 0일때만 inode까지 free
+    
+    #endif
 }
 
 /* Free the current process's resources. */

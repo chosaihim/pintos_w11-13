@@ -8,5 +8,7 @@ vm/inspect.o: ../../vm/inspect.c ../../include/threads/interrupt.h \
  ../../include/vm/anon.h ../../include/vm/file.h \
  ../../include/filesys/file.h ../../include/filesys/off_t.h \
  ../../include/lib/kernel/hash.h ../../include/lib/kernel/list.h \
- ../../include/filesys/page_cache.h ../../include/threads/mmu.h \
- ../../include/threads/pte.h ../../include/vm/inspect.h
+ ../../include/filesys/page_cache.h ../../include/filesys/directory.h \
+ ../../include/devices/disk.h ../../include/lib/inttypes.h \
+ ../../include/threads/mmu.h ../../include/threads/pte.h \
+ ../../include/vm/inspect.h

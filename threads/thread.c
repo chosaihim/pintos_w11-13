@@ -123,6 +123,11 @@ thread_init (void) {
 	initial_thread->status = THREAD_RUNNING;
 	initial_thread->tid = allocate_tid ();
     // printf("thread _ init !\n");
+
+    #ifdef EFILESYS
+    initial_thread->working_dir = NULL; //! ADD : for project 4
+    #endif
+
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.
@@ -202,6 +207,15 @@ thread_create (const char *name, int priority,
 	/* Initialize thread. */
 	init_thread (t, name, priority);
 	tid = t->tid = allocate_tid ();
+
+    #ifdef EFILESYS
+
+    if(thread_current()->cur_dir != NULL)
+    {
+        t->cur_dir = dir_reopen(thread_current()->cur_dir); //! ADD : 자식 디렉토리를 부모로
+    }
+
+    #endif
 
 	/* Initialize for Hierachical Process */
 	t->parent = thread_current();

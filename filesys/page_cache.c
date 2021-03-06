@@ -22,6 +22,7 @@ tid_t page_cache_workerd;
 void
 pagecache_init (void) {
 	/* TODO: Create a worker daemon for page cache with page_cache_kworkerd */
+    //! 스레드 만들기
 }
 
 /* Initialize the page cache */
