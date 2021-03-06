@@ -14,6 +14,9 @@
 #include "userprog/process.h"
 //! ADD: for palloc
 #include "threads/palloc.h"
+//! ADD : for project 4
+#include "filesys/directory.h"
+#include "filesys/inode.h"
 
 /* ADD header for page fault */
 // #include "userprog/exception.h"
@@ -141,6 +144,9 @@ void syscall_handler(struct intr_frame *f UNUSED)
         break;
     case SYS_READDIR:
         f->R.rax = sys_readdir(f->R.rdi, f->R.rsi);
+        break;
+    case SYS_INUMBER:
+        f->R.rax = sys_inumber(f->R.rdi);
         break;
     }
     // thread_exit ();
@@ -427,18 +433,38 @@ bool sys_chdir(const char *path_name)
 
 bool sys_mkdir(const char *dir)
 {
-    return filesys_create_dir(dir);
+    bool tmp = filesys_create_dir(dir);
+    // printf("탬프 :: %d\n", tmp);
+    return tmp;
+    // return filesys_create_dir(dir);
 }
 
 bool sys_readdir(int fd, char *name)
 {
     /* fd리스트에서fd에대한file정보를얻어옴*/
+    struct file *target = process_get_file(fd);
+    if (target == NULL)
+        return false;
     /* fd의file->inode가디렉터리인지검사*/
-    if (!is_dir(fd))
+    if (!inode_is_dir(target->inode))
         return false;
 
     /* p_file을dir자료구조로포인팅*/
-    struct dir *p_file;
-    
+    struct dir *p_file = dir_open(target->inode);
+    p_file->pos = 2 * sizeof(struct dir_entry); //! ".", ".." 제외
+
     /* 디렉터리의엔트에서“.”,”..” 이름을제외한파일이름을name에저장*/
+    bool result;
+    result = dir_readdir(p_file, name);
+    dir_close(p_file);
+    return result;
+}
+
+struct cluster_t *sys_inumber(int fd)
+{
+    struct file *target = process_get_file(fd);
+    if (target == NULL)
+        return false;
+
+    return inode_get_inumber(target->inode);
 }

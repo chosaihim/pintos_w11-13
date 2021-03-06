@@ -34,5 +34,9 @@ void munmap (void *addr);
 
 //! Project 4
 bool is_dir(int fd);
+bool sys_chdir(const char *path_name);
+bool sys_mkdir(const char *dir);
+bool sys_readdir(int fd, char *name);
+struct cluster_t *sys_inumber(int fd);
 
 #endif /* userprog/syscall.h */// 

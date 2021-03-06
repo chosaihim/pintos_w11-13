@@ -7,4 +7,5 @@ filesys/directory.o: ../../filesys/directory.c \
  ../../include/lib/kernel/stdio.h ../../include/lib/string.h \
  ../../include/lib/kernel/list.h ../../include/filesys/filesys.h \
  ../../include/filesys/inode.h ../../include/filesys/fat.h \
- ../../include/filesys/file.h ../../include/threads/malloc.h
+ ../../include/filesys/file.h ../../include/lib/kernel/list.h \
+ ../../include/threads/malloc.h

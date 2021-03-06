@@ -125,7 +125,7 @@ thread_init (void) {
     // printf("thread _ init !\n");
 
     #ifdef EFILESYS
-    initial_thread->working_dir = NULL; //! ADD : for project 4
+    initial_thread->cur_dir = NULL; //! ADD : for project 4
     #endif
 
 }

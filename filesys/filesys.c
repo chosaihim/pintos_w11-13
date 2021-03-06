@@ -7,6 +7,8 @@
 #include "filesys/inode.h"
 #include "filesys/directory.h"
 #include "devices/disk.h"
+//! ADD
+#include "threads/thread.h"
 
 /* The disk that contains the file system. */
 struct disk *filesys_disk;
@@ -115,22 +117,30 @@ filesys_open(const char *name)
     #ifdef EFILESYS
 
     // struct dir *dir = dir_open_root();
+    // printf("==== 여기입니까?? 1111 \n");
 
     /* name의파일경로를cp_name에복사*/
     char* cp_name = (char *)malloc(strlen(name) + 1);
     strlcpy(cp_name, name, strlen(name) + 1);
 
+    // printf("==== 여기입니까?? 2222 %s\n", cp_name);
     /* cp_name의경로분석*/
-    char* file_name;
+    char* file_name = (char *)malloc(NAME_MAX + 1);
     struct dir* dir = parse_path(cp_name, file_name);
     free(cp_name);
 
-    struct inode *inode = NULL;
+    // printf("==== 여기입니까?? 3333 %s\n", file_name);
+    struct inode *inode;
 
     if (dir != NULL)
+    {
         dir_lookup(dir, file_name, &inode);
+        // printf("==== 여기입니까?? 4444 %s\n", file_name);
+
+    }
     dir_close(dir);
 
+    // printf("==== 여기입니까?? 5555 %p\n", &inode);
     return file_open(inode);    
 
     #else
@@ -162,7 +172,7 @@ bool filesys_remove(const char *name)
     strlcpy(cp_name, name, strlen(name) + 1);
 
     /* cp_name의경로분석*/
-    char* file_name;
+    char* file_name = (char *)malloc(NAME_MAX + 1);
     struct dir* dir = parse_path(cp_name, file_name);
     free(cp_name);
 
@@ -185,14 +195,22 @@ bool filesys_remove(const char *name)
 //! ADD
 bool filesys_create_dir(const char* name) {
 
+    // printf("파일시스 크리에이트 디렉토리\n");
     /* name의파일경로를cp_name에복사*/
     char* cp_name = (char *)malloc(strlen(name) + 1);
     strlcpy(cp_name, name, strlen(name) + 1);
+    // printf("크리에잇 디렉토리 cp name 11 :: %s\n", cp_name);
 
     /* name 경로분석*/
-    char* file_name;
+    char* file_name = (char *)malloc(NAME_MAX + 1);
     struct dir* dir = parse_path(cp_name, file_name);
     free(cp_name);
+    // printf("name :: %p\n", dir);
+
+    if(dir == NULL)
+        return false;
+
+    printf("크리에잇 디렉토리 file name 11 :: %s\n", file_name);
 
     /* bitmap에서inodesector번호할당*/
     cluster_t inode_cluster = fat_create_chain(0);
@@ -211,11 +229,11 @@ bool filesys_create_dir(const char* name) {
                && dir_add(sub_dir = dir_open(sub_dir_inode), ".", inode_cluster)
                && dir_add(sub_dir, "..", inode_get_inumber(dir_get_inode(dir))));
 
+    // printf("success : %d\n", success);
     if (!success && inode_cluster != 0)
         fat_remove_chain(inode_cluster, 0);
     dir_close(sub_dir);
     dir_close(dir);
-    // printf("success : %d\n", success);
     return success;
 }
 
@@ -260,8 +278,12 @@ struct dir *parse_path(char *path_name, char *file_name)
         nextToken = strtok_r(NULL, "/", &savePtr);
     }
     /* token의파일이름을file_name에저장*/
-    file_name = (char *)malloc(strlen(token) + 1);
+    // printf("토큰 이름 :: %s\n", token);
+    // printf("말록 전 파일 주소 :: %p\n", file_name);
+    // file_name = (char *)malloc(strlen(token) + 1);
+    // printf("말록 후 파일 주소 :: %p\n", file_name);
     strlcpy (file_name, token, strlen(token) + 1);
+    // printf("복사된 파일이름 :: %s\n", file_name);
     /* dir정보반환*/
     return dir;
 }
@@ -275,8 +297,12 @@ do_format(void)
 #ifdef EFILESYS
     /* Create FAT and save it to the disk. */
     fat_create();
-    if (!dir_create(ROOT_DIR_SECTOR, 16))
+    struct dir* root_dir;
+    if (!dir_create(ROOT_DIR_SECTOR, 16)
+        || !dir_add(root_dir = dir_open_root(), ".", ROOT_DIR_SECTOR)
+        || !dir_add(root_dir, "..", ROOT_DIR_SECTOR))
         PANIC("root directory creation failed");
+    dir_close(root_dir);
     fat_close();
 #else
     free_map_create();
