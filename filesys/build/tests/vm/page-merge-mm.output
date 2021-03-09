@@ -4,7 +4,7 @@ Kernel command line: -q -f put page-merge-mm put child-qsort-mm run page-merge-m
 Pintos booting with: 
 	base_mem: 0x0 ~ 0x9fc00 (Usable: 639 kB)
 	ext_mem: 0x100000 ~ 0x13e0000 (Usable: 19,328 kB)
-Calibrating timer...  156,262,400 loops/s.
+Calibrating timer...  157,081,600 loops/s.
 hd0:0: detected 329 sector (164 kB) disk, model "QEMU HARDDISK", serial "QM00001"
 hd0:1: detected 20,160 sector (9 MB) disk, model "QEMU HARDDISK", serial "QM00002"
 hd1:0: detected 224 sector (112 kB) disk, model "QEMU HARDDISK", serial "QM00003"
@@ -46,8 +46,8 @@ child-qsort-mm: exit(80)
 (page-merge-mm) end
 page-merge-mm: exit(0)
 Execution of 'page-merge-mm' complete.
-Timer: 2334 ticks
-Thread: 30 idle ticks, 54 kernel ticks, 2250 user ticks
+Timer: 2358 ticks
+Thread: 30 idle ticks, 56 kernel ticks, 2272 user ticks
 hd0:0: 0 reads, 0 writes
 hd0:1: 5101 reads, 6929 writes
 hd1:0: 224 reads, 0 writes

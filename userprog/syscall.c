@@ -485,6 +485,7 @@ bool sys_readdir(int fd, char *name)
 
     /* 디렉터리의엔트에서“.”,”..” 이름을제외한파일이름을name에저장*/
     bool result = dir_readdir(p_file, name);
+    //! 닫으면 오류가 생김
     // file_close(target);
     // dir_close(p_file);
     return result;
