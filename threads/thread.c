@@ -124,10 +124,11 @@ thread_init (void) {
 	initial_thread->tid = allocate_tid ();
     // printf("thread _ init !\n");
 
+    // TODO : for Project 4
     #ifdef EFILESYS
-    initial_thread->cur_dir = NULL; //! ADD : for project 4
+    initial_thread->cur_dir = NULL;
     #endif
-
+    // TODO END
 }
 
 /* Starts preemptive thread scheduling by enabling interrupts.

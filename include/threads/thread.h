@@ -144,10 +144,9 @@ struct thread {
 	void* rsp_stack;		//! stack grow 할 때 사용
     void* stack_bottom;
 
-#endif
-
-    //! ADD : 디렉토리 추가
+    // TODO : directory 추가
     struct dir* cur_dir;
+#endif
 
 	/* Owned by thread.c. */
 	struct intr_frame tf;               /* Information for switching */

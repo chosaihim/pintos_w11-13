@@ -18,4 +18,5 @@ userprog/syscall.o: ../../userprog/syscall.c \
  ../../include/threads/pte.h ../../include/threads/init.h \
  ../../include/filesys/filesys.h ../../include/lib/kernel/console.h \
  ../../include/userprog/process.h ../../include/filesys/inode.h \
- ../../include/filesys/fat.h ../../include/lib/kernel/list.h
+ ../../include/filesys/fat.h ../../include/lib/kernel/list.h \
+ ../../include/lib/string.h

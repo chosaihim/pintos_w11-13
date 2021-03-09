@@ -38,5 +38,6 @@ bool sys_chdir(const char *path_name);
 bool sys_mkdir(const char *dir);
 bool sys_readdir(int fd, char *name);
 struct cluster_t *sys_inumber(int fd);
+int symlink (const char *target, const char *linkpath);
 
 #endif /* userprog/syscall.h */// 

@@ -23,30 +23,23 @@ void inode_deny_write (struct inode *);
 void inode_allow_write (struct inode *);
 off_t inode_length (const struct inode *);
 
-//! ADD
+// TODO ========================= for Project 4 ================================
 bool inode_is_dir(const struct inode* inode);
+bool link_inode_create (disk_sector_t sector, char* path_name);
 
 /* On-disk inode.
  * Must be exactly DISK_SECTOR_SIZE bytes long. */
 struct inode_disk {
-    //! 제거
 	disk_sector_t start;                /* First data sector. */
 	off_t length;                       /* File size in bytes. */
 	unsigned magic;                     /* Magic number. */
+
     //! ADD
-
     uint32_t is_dir;    /* 디렉토리 구분 */
-
-    //! END
+    uint32_t is_link;   /* symlink 구분 */
 
     //^ 멤버 추가시마다 512바이트 맞추기
-	uint32_t unused[124];               /* Not used. */
-    //! ADD
-
-    // disk_sector_t direct_map_table[DIRECT_BLOCK_ENTRIES];
-    // disk_sector_t indirect_block_sec;
-    // disk_sector_t double_indirect_block_sec;
-    //! END
+	char link_name[492];               /* Not used. */
 };
 
 /* In-memory inode. */
@@ -56,11 +49,9 @@ struct inode {
 	int open_cnt;                       /* Number of openers. */
 	bool removed;                       /* True if deleted, false otherwise. */
 	int deny_write_cnt;                 /* 0: writes ok, >0: deny writes. */
-    //! ADD
-	// struct lock extend_lock;
-    //! 제거
 	struct inode_disk data;             /* Inode content. */
 };
 
+// TODO END ========================= for Project 4 ================================
 
 #endif /* filesys/inode.h */

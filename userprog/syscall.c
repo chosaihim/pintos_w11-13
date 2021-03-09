@@ -17,6 +17,8 @@
 //! ADD : for project 4
 #include "filesys/directory.h"
 #include "filesys/inode.h"
+#include "string.h"
+#include "filesys/fat.h"
 
 /* ADD header for page fault */
 // #include "userprog/exception.h"
@@ -148,6 +150,9 @@ void syscall_handler(struct intr_frame *f UNUSED)
     case SYS_INUMBER:
         f->R.rax = sys_inumber(f->R.rdi);
         break;
+    case SYS_SYMLINK:
+        f->R.rax = symlink(f->R.rdi, f->R.rsi);
+        break;
     }
     // thread_exit ();
 }
@@ -229,6 +234,12 @@ int wait(pid_t pid)
 }
 bool create(const char *file, unsigned initial_size)
 {
+    //! for vine
+    if (thread_current()->next_fd > 511)
+    {
+        return 0;
+    }
+
     if (file)
         return filesys_create(file, initial_size); // ASSERT, dir_add (name!=NULL)
     else
@@ -251,6 +262,7 @@ int open(const char *file)
         struct file *open_file = filesys_open(file);
         if (open_file)
         {
+            // printf("만든 파일의 섹터 :: %d\n", open_file->inode->sector);
             return process_add_file(open_file);
         }
         else
@@ -308,7 +320,8 @@ int write(int fd, const void *buffer, unsigned length)
         else
         {
             /* 실제로는 inode의 writable이 더 중요하다 !!! */
-            ret = file_write(target, buffer, (off_t)length);
+            if(!inode_is_dir(file_get_inode(target)))
+                ret = file_write(target, buffer, (off_t)length);
         }
     }
     lock_release(&filesys_lock);
@@ -371,16 +384,18 @@ void munmap(void *addr)
 }
 //!END Memory Mapped Files
 
-//! ADD : for Project 4
+// TODO =============================== for Project 4 ==========================================
+//: file의 directory 여부 판단
 bool is_dir(int fd)
 {
     struct file *target = process_get_file(fd);
     if (target == NULL)
         return false;
 
-    return inode_is_dir(target->inode);
+    return inode_is_dir(file_get_inode(target));
 }
 
+//: 현재 directory 위치 변경
 bool sys_chdir(const char *path_name)
 {
     if (path_name == NULL)
@@ -390,24 +405,30 @@ bool sys_chdir(const char *path_name)
     char *cp_name = (char *)malloc(strlen(path_name) + 1);
     strlcpy(cp_name, path_name, strlen(path_name) + 1);
 
-    struct dir *chdir;
+    struct dir *chdir = NULL;
     /* PATH_NAME의절대/상대경로에따른디렉터리정보저장(구현)*/
-    if (cp_name[0] == "/")
+    if (cp_name[0] == '/')
+    {
         chdir = dir_open_root();
+    }
     else
         chdir = dir_reopen(thread_current()->cur_dir);
 
+
     /* dir경로를분석하여디렉터리를반환*/
+    //! 무조건 경로가 들어올 것이므로, nextToken 불필요
     char *token, *nextToken, *savePtr;
     token = strtok_r(cp_name, "/", &savePtr);
-    nextToken = strtok_r(NULL, "/", &savePtr);
 
-    struct inode *inode = malloc(sizeof *inode);
-    while (token != NULL && nextToken != NULL)
+    struct inode *inode = NULL;
+    while (token != NULL)
     {
         /* dir에서token이름의파일을검색하여inode의정보를저장*/
         if (!dir_lookup(chdir, token, &inode))
+        {
+            dir_close(chdir);
             return false;
+        }
 
         /* inode가파일일경우NULL 반환*/
         if (!inode_is_dir(inode))
@@ -417,13 +438,14 @@ bool sys_chdir(const char *path_name)
         }
         /* dir의디렉터리정보를메모리에서해지*/
         dir_close(chdir);
+        
         /* inode의디렉터리정보를dir에저장*/
         chdir = dir_open(inode);
-        /* token에검색할경로이름저장*/
-        token = nextToken;
-        nextToken = strtok_r(NULL, "/", &savePtr);
-    }
 
+        /* token에검색할경로이름저장*/
+        token = strtok_r(NULL, "/", &savePtr);
+
+    }
     /* 스레드의현재작업디렉터리를변경*/
     dir_close(thread_current()->cur_dir);
     thread_current()->cur_dir = chdir;
@@ -431,40 +453,110 @@ bool sys_chdir(const char *path_name)
     return true;
 }
 
+//: directory 생성
 bool sys_mkdir(const char *dir)
 {
+    lock_acquire(&filesys_lock);
     bool tmp = filesys_create_dir(dir);
-    // printf("탬프 :: %d\n", tmp);
+
+    lock_release(&filesys_lock);
     return tmp;
-    // return filesys_create_dir(dir);
 }
 
+//: directory 내 파일 존재 여부 확인
 bool sys_readdir(int fd, char *name)
 {
+    if (name == NULL)
+        return false;
+
     /* fd리스트에서fd에대한file정보를얻어옴*/
     struct file *target = process_get_file(fd);
     if (target == NULL)
         return false;
+
     /* fd의file->inode가디렉터리인지검사*/
-    if (!inode_is_dir(target->inode))
+    if (!inode_is_dir(file_get_inode(target)))
         return false;
 
     /* p_file을dir자료구조로포인팅*/
-    struct dir *p_file = dir_open(target->inode);
-    p_file->pos = 2 * sizeof(struct dir_entry); //! ".", ".." 제외
+    struct dir *p_file = target;
+    if(p_file->pos == 0)
+        dir_seek(p_file, 2 * sizeof(struct dir_entry)); //! ".", ".." 제외
 
     /* 디렉터리의엔트에서“.”,”..” 이름을제외한파일이름을name에저장*/
-    bool result;
-    result = dir_readdir(p_file, name);
-    dir_close(p_file);
+    bool result = dir_readdir(p_file, name);
+    // file_close(target);
+    // dir_close(p_file);
     return result;
 }
 
+//: file의 inode가 기록된 sector 찾기
 struct cluster_t *sys_inumber(int fd)
 {
     struct file *target = process_get_file(fd);
     if (target == NULL)
         return false;
 
-    return inode_get_inumber(target->inode);
+    return inode_get_inumber(file_get_inode(target));
 }
+
+//: 바로가기 file 생성
+int symlink (const char *target, const char *linkpath)
+{
+    //! SOFT LINK
+    bool success = false;
+    char* cp_link = (char *)malloc(strlen(linkpath) + 1);
+    strlcpy(cp_link, linkpath, strlen(linkpath) + 1);
+
+    /* cp_name의경로분석*/
+    char* file_link = (char *)malloc(strlen(cp_link) + 1);
+    struct dir* dir = parse_path(cp_link, file_link);
+
+    cluster_t inode_cluster = fat_create_chain(0);
+
+    //! link file 전용 inode 생성 및 directory에 추가
+    success = (dir != NULL
+               && link_inode_create(inode_cluster, target)
+               && dir_add(dir, file_link, inode_cluster));
+
+    if (!success && inode_cluster != 0)
+        fat_remove_chain(inode_cluster, 0);
+    
+    dir_close(dir);
+    free(cp_link);
+    free(file_link);
+
+    return success - 1;
+
+
+    //! HARD LINK
+    // char* cp_link = (char *)malloc(strlen(linkpath) + 1);
+    // strlcpy(cp_link, linkpath, strlen(linkpath) + 1);
+    // char* target_link = (char *)malloc(strlen(linkpath) + 1);
+    // strlcpy(target_link, linkpath, strlen(linkpath) + 1);
+
+    // char* cp_file_link = (char *)malloc(strlen(linkpath) + 1);
+    // char* target_file_link = (char *)malloc(strlen(linkpath) + 1);
+
+    // struct dir* cur_dir = parse_path(cp_link, cp_file_link);
+    // struct dir* target_dir = parse_path(target_link, target_file_link);
+
+    // // printf("현재 스레드의 섹터 넘버 :: %d\n",inode_get_inumber(dir_get_inode(cur_dir)));
+    // // printf("타겟 스레드의 섹터 넘버 :: %d\n",inode_get_inumber(dir_get_inode(target_dir)));
+
+    // bool success = dir_add (cur_dir, linkpath, inode_get_inumber(dir_get_inode(target_dir)));
+
+    // dir_close(cur_dir);
+    // dir_close(target_dir);
+
+    // free(cp_link);
+    // free(target_link);
+    // free(cp_file_link);
+    // free(target_file_link);
+
+    // return success - 1;
+
+    // printf("만들 파일 :: %s\n", linkpath);
+}
+
+// TODO END =============================== for Project 4 ==========================================
